@@ -43,99 +43,253 @@
       </a>
 
       <nav class="nav" aria-label="Primary">
-        <a href="index.html" data-nav="home">Home</a>
-        <a href="catalog.html" data-nav="catalog">Catalog</a>
-        <a href="events.html" data-nav="events">Events</a>
-        <a href="membership.html" data-nav="membership">Membership</a>
-        <a href="contact.html" data-nav="contact">Contact</a>
+        <a href="#overview" data-section="overview" class="section-nav">Overview</a>
+        <a href="#catalog" data-section="catalog" class="section-nav">Catalog</a>
+        <a href="#events" data-section="events" class="section-nav">Events</a>
+        <a href="#membership" data-section="membership" class="section-nav">Membership</a>
       </nav>
 
       <div class="controls" style="display:flex; align-items:center; gap:10px">
         <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
           <span data-theme-icon>🌙</span>
         </button>
-        <button class="btn danger" type="button" data-admin-signout>Sign out</button>
-        <button class="btn" type="button" data-reset-demo>Reset Demo Data</button>
+        <div data-session-ui></div>
       </div>
     </div>
   </header>
 
   <main id="main" class="container">
-    <section class="hero">
-      <div class="card pad">
-        <span class="kicker">Admin Tools (Client-side demo)</span>
-        <h1 class="h1" style="margin-bottom:6px">Dashboard</h1>
-        <p class="p">Manage the catalog, monitor loans, and maintain availability.</p>
+    <!-- DASHBOARD OVERVIEW -->
+    <section id="overview" class="section" data-content-section="overview">
+      <div class="hero">
+        <div class="card pad">
+          <span class="kicker">Admin Dashboard</span>
+          <h1 class="h1" style="margin-bottom:6px">Dashboard Overview</h1>
+          <p class="p">Quick statistics and summary of library operations.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="grid" data-dashboard-stats>
+          <!-- Stats will be populated by JavaScript -->
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-title">
-        <h2>Add a book</h2>
-        <p>Creates a new Catalog Card entry</p>
-      </div>
+    <!-- CATALOG SECTION -->
+    <section id="catalog" class="section" data-content-section="catalog">
+      <div class="hero">
+        <div class="card pad">
+          <span class="kicker">Book Catalog Management</span>
+          <h1 class="h1" style="margin-bottom:6px">Catalog</h1>
+          <p class="p">Manage books in the catalog. <span data-role-hint="catalog"></span></p>
 
-      <div class="card pad">
-        <form data-add-book-form>
-          <div class="grid">
+          <div class="grid" style="margin-top:14px">
             <div class="col-6">
               <label>
-                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Title</div>
-                <input class="input" name="title" type="text" placeholder="Book title" required />
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Search</div>
+                <input class="input" type="search" placeholder="e.g., Gatsby, Hawking, Fantasy, 978..." data-search />
               </label>
             </div>
-            <div class="col-6">
-              <label>
-                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Author</div>
-                <input class="input" name="author" type="text" placeholder="Author" required />
-              </label>
-            </div>
-            <div class="col-4">
+            <div class="col-3">
               <label>
                 <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Subject</div>
-                <input class="input" name="subject" type="text" placeholder="e.g., Science" />
+                <select class="input" data-subject></select>
               </label>
             </div>
-            <div class="col-4">
+            <div class="col-3">
               <label>
-                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">ISBN</div>
-                <input class="input" name="isbn" type="text" placeholder="978..." />
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Availability</div>
+                <select class="input" data-availability>
+                  <option value="">All</option>
+                  <option value="available">Available</option>
+                  <option value="checkedout">Checked out</option>
+                </select>
               </label>
-            </div>
-            <div class="col-4">
-              <label>
-                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Format</div>
-                <input class="input" name="format" type="text" placeholder="Print / E-Book" />
-              </label>
-            </div>
-            <div class="col-12">
-              <label>
-                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Location</div>
-                <input class="input" name="location" type="text" placeholder="Adult Fiction / Children / Digital" />
-              </label>
-            </div>
-            <div class="col-12">
-              <button class="btn primary" type="submit">Add book to catalog</button>
             </div>
           </div>
-        </form>
+
+          <div class="controls" style="margin-top:12px">
+            <span class="badge" data-result-count></span>
+            <button class="btn primary" type="button" data-admin-add-book style="display:none">+ Add Book</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" data-admin-section style="display:none">
+        <div class="section-title">
+          <h2>Add New Book</h2>
+          <p>Add a book to the catalog</p>
+        </div>
+        <div class="card pad">
+          <form data-add-book-form>
+            <div class="grid">
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Title</div>
+                  <input class="input" name="title" type="text" placeholder="Book title" required />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Author</div>
+                  <input class="input" name="author" type="text" placeholder="Author" required />
+                </label>
+              </div>
+              <div class="col-4">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Subject</div>
+                  <input class="input" name="subject" type="text" placeholder="e.g., Science" />
+                </label>
+              </div>
+              <div class="col-4">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">ISBN</div>
+                  <input class="input" name="isbn" type="text" placeholder="978..." />
+                </label>
+              </div>
+              <div class="col-4">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Format</div>
+                  <input class="input" name="format" type="text" placeholder="Print / E-Book" />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Location</div>
+                  <input class="input" name="location" type="text" placeholder="Adult Fiction / Children / Digital" />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Cover Image URL (optional)</div>
+                  <input class="input" name="cover" type="url" placeholder="https://..." />
+                </label>
+              </div>
+              <div class="col-12">
+                <button class="btn primary" type="submit">Add Book</button>
+                <button class="btn" type="button" data-cancel-add-book>Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="catalog" data-catalog></div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-title">
-        <h2>Catalog</h2>
-        <p>Toggle availability to simulate check-in/check-out</p>
+    <!-- EVENTS SECTION -->
+    <section id="events" class="section" data-content-section="events">
+      <div class="hero">
+        <div class="card pad">
+          <span class="kicker">Library Events Management</span>
+          <h1 class="h1" style="margin-bottom:6px">Events</h1>
+          <p class="p">Manage library events and programs. <span data-role-hint="events"></span></p>
+          <div class="controls" style="margin-top:12px">
+            <button class="btn primary" type="button" data-admin-add-event style="display:none">+ Add Event</button>
+          </div>
+        </div>
       </div>
-      <div class="card pad" data-admin-books></div>
+
+      <div class="section" data-admin-section style="display:none">
+        <div class="section-title">
+          <h2>Add New Event</h2>
+          <p>Add an event to the calendar</p>
+        </div>
+        <div class="card pad">
+          <form data-add-event-form>
+            <div class="grid">
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Event Title</div>
+                  <input class="input" name="title" type="text" placeholder="Event name" required />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Schedule</div>
+                  <input class="input" name="schedule" type="text" placeholder="e.g., Every Saturday" required />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Time</div>
+                  <input class="input" name="time" type="text" placeholder="e.g., 11:00 AM – 12:00 PM" />
+                </label>
+              </div>
+              <div class="col-6">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Location</div>
+                  <input class="input" name="location" type="text" placeholder="e.g., Community Hall" />
+                </label>
+              </div>
+              <div class="col-12">
+                <label>
+                  <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Description</div>
+                  <textarea class="input" name="description" rows="3" placeholder="Event details..."></textarea>
+                </label>
+              </div>
+              <div class="col-12">
+                <button class="btn primary" type="submit">Add Event</button>
+                <button class="btn" type="button" data-cancel-add-event>Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">
+          <h2>Upcoming Events</h2>
+          <p>Library programs and workshops</p>
+        </div>
+        <div class="grid" data-events-list></div>
+      </div>
     </section>
 
-    <section class="section">
-      <div class="section-title">
-        <h2>Active loans</h2>
-        <p>View patron borrowing status</p>
+    <!-- MEMBERSHIP SECTION -->
+    <section id="membership" class="section" data-content-section="membership">
+      <div class="hero">
+        <div class="card pad">
+          <span class="kicker">Membership Management</span>
+          <h1 class="h1" style="margin-bottom:6px">Membership</h1>
+          <p class="p">View and manage patron accounts. <span data-role-hint="membership"></span></p>
+        </div>
       </div>
-      <div class="card pad" data-admin-loans></div>
+
+      <div class="section" data-admin-section style="display:none">
+        <div class="section-title">
+          <h2>All Members</h2>
+          <p>View and manage patron accounts</p>
+        </div>
+        <div class="card pad" data-admin-members></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">
+          <h2>All Patrons</h2>
+          <p>View and manage patron accounts</p>
+        </div>
+        <div class="card pad" data-admin-patrons></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">
+          <h2>Active Loans</h2>
+          <p>View all current book loans</p>
+        </div>
+        <div class="card pad" data-admin-loans></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">
+          <h2>Active Holds</h2>
+          <p>View all pending book holds</p>
+        </div>
+        <div class="card pad" data-admin-holds></div>
+      </div>
     </section>
   </main>
 
@@ -148,6 +302,8 @@
       </div>
     </div>
   </footer>
+
+  <a href="#main" class="back-to-top" data-back-to-top aria-label="Back to top">↑</a>
 
   <script src="app.js"></script>
 </body>

@@ -86,6 +86,13 @@
       }
     ];
 
+    const seedEvents = [
+      {id:'e_4001', title:'Story Time (Kids)', schedule:'Every Saturday', time:'11:00 AM – 12:00 PM', location:'Children\'s Corner', description:'Includes read-aloud sessions and fun activities.'},
+      {id:'e_4002', title:'Career & Resume Clinic', schedule:'2nd Wednesday', time:'4:00 PM – 6:00 PM', location:'Community Hall', description:'Bring your resume and get one-on-one guidance.'},
+      {id:'e_4003', title:'Digital Literacy Workshop', schedule:'Monthly', time:'TBA', location:'Computer Lab', description:'Topics: Online safety, email basics, and e-resources. Registration: Required at the help desk.'},
+      {id:'e_4004', title:'Book Club Meetup', schedule:'Every Friday', time:'5:30 PM – 6:30 PM', location:'Reading Room', description:'Theme rotates weekly. Check announcements on the notice board.'}
+    ];
+
     const dataSeed = {
       version:1,
       library:{
@@ -100,6 +107,7 @@
       patrons: seedPatrons,
       loans: seedLoans,
       holds: [],
+      events: seedEvents,
       session:{
         patronId:null,
         isAdmin:false
@@ -111,7 +119,10 @@
   }
 
   function getData(){
-    return seedDataIfMissing();
+    const data = seedDataIfMissing();
+    // Ensure events array exists for backward compatibility
+    if(!data.events) data.events = [];
+    return data;
   }
 
   function setSession(updates){
@@ -174,7 +185,7 @@
     return null;
   }
 
-  function renderCatalog(list, mount){
+  function renderCatalog(list, mount, isAdmin = false){
     if(!mount) return;
     if(!list.length){
       mount.innerHTML = '<div class="note">No matching books found. Try a different search.</div>';
@@ -189,11 +200,13 @@
       const featured = b.featured ? '<span class="badge">Featured</span>' : '';
       const newArrival = b.newArrival ? '<span class="badge warn">New</span>' : '';
 
-      const holdBtn = `<button class="btn" data-action="hold" data-book="${b.id}">Place Hold</button>`;
-      const reserveBtn = `<button class="btn success" data-action="reserve" data-book="${b.id}">Reserve</button>`;
-      const signInBtn = `<a class="btn primary" href="patron-login.html">Sign in to Reserve</a>`;
+      const holdBtn = isAdmin ? '' : `<button class="btn" data-action="hold" data-book="${b.id}">Place Hold</button>`;
+      const reserveBtn = isAdmin ? '' : `<button class="btn success" data-action="reserve" data-book="${b.id}">Reserve</button>`;
+      const signInBtn = isAdmin ? '' : `<a class="btn primary" href="patron-login.html">Sign in to Reserve</a>`;
+      const deleteBtn = isAdmin ? `<button class="btn danger" type="button" data-delete-book="${b.id}">Delete</button>` : '';
+      const toggleBtn = isAdmin ? `<button class="btn" type="button" data-toggle-avail="${b.id}">Toggle Availability</button>` : '';
 
-      const actionPrimary = p ? reserveBtn : signInBtn;
+      const actionPrimary = isAdmin ? '' : (p ? reserveBtn : signInBtn);
 
       const coverImage = b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">` : `<div class="book-cover-placeholder">${escapeHtml(b.title)}</div>`;
       
@@ -226,7 +239,9 @@
           <div class="book-actions">
             ${actionPrimary}
             ${holdBtn}
-            <a class="btn" href="catalog.html#${encodeURIComponent(b.id)}">View in Catalog</a>
+            ${toggleBtn}
+            ${deleteBtn}
+            ${!isAdmin ? `<a class="btn" href="catalog.html#${encodeURIComponent(b.id)}">View in Catalog</a>` : ''}
           </div>
         </article>
       `;
@@ -386,11 +401,27 @@
 
   function initCatalogPage(){
     const data = getData();
+    const isAdmin = data.session.isAdmin;
 
     const mount = $('[data-catalog]');
     const search = $('[data-search]');
     const subject = $('[data-subject]');
     const availability = $('[data-availability]');
+
+    // Show/hide admin controls
+    const adminSection = $('[data-admin-section]');
+    const adminAddBtn = $('[data-admin-add-book]');
+    const patronLink = $('[data-patron-link]');
+    
+    if(isAdmin){
+      if(adminSection) adminSection.style.display = 'block';
+      if(adminAddBtn) adminAddBtn.style.display = 'inline-flex';
+      if(patronLink) patronLink.style.display = 'none';
+    } else {
+      if(adminSection) adminSection.style.display = 'none';
+      if(adminAddBtn) adminAddBtn.style.display = 'none';
+      if(patronLink) patronLink.style.display = 'inline-flex';
+    }
 
     if(subject){
       const subjects = Array.from(new Set(data.books.map(b=>b.subject))).sort();
@@ -409,7 +440,7 @@
         return matchQ && matchSub && matchAv;
       });
 
-      renderCatalog(list, mount);
+      renderCatalog(list, mount, isAdmin);
       const count = $('[data-result-count]');
       if(count) count.textContent = `${list.length} result(s)`;
     }
@@ -421,6 +452,95 @@
     });
 
     filter();
+
+    // Admin: Add book
+    const addForm = $('[data-add-book-form]');
+    if(addForm && isAdmin){
+      addForm.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const dataNow = getData();
+        const title = ($('[name=title]', addForm)?.value || '').trim();
+        const author = ($('[name=author]', addForm)?.value || '').trim();
+        const subject = ($('[name=subject]', addForm)?.value || '').trim();
+        const isbn = ($('[name=isbn]', addForm)?.value || '').trim();
+        const format = ($('[name=format]', addForm)?.value || '').trim();
+        const location = ($('[name=location]', addForm)?.value || '').trim();
+        const cover = ($('[name=cover]', addForm)?.value || '').trim();
+        
+        if(!title || !author){
+          toast('Missing details', 'Please provide at least title and author.');
+          return;
+        }
+
+        dataNow.books.push({
+          id: uid('b'),
+          title,
+          author,
+          subject: subject || 'General',
+          isbn: isbn || '—',
+          format: format || 'Print',
+          location: location || 'Stacks',
+          cover: cover || undefined,
+          available: true,
+          featured: false,
+          newArrival: true
+        });
+        saveData(dataNow);
+        toast('Added', 'New book added to catalog.');
+        addForm.reset();
+        if(adminSection) adminSection.style.display = 'none';
+        filter();
+      });
+    }
+
+    // Admin: Toggle add form
+    adminAddBtn?.addEventListener('click', ()=>{
+      if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+      if(adminSection && adminSection.style.display === 'block'){
+        adminSection.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+
+    $('[data-cancel-add-book]')?.addEventListener('click', ()=>{
+      if(adminSection) adminSection.style.display = 'none';
+      if(addForm) addForm.reset();
+    });
+
+    // Admin: Delete book and toggle availability
+    if(isAdmin){
+      mount?.addEventListener('click', (e)=>{
+        const deleteBtn = e.target.closest('[data-delete-book]');
+        if(deleteBtn){
+          const bookId = deleteBtn.getAttribute('data-delete-book');
+          const book = data.books.find(x=>x.id===bookId);
+          if(!book) return;
+          
+          if(confirm(`Delete book "${book.title}" from catalog?`)){
+            const dataNow = getData();
+            dataNow.books = dataNow.books.filter(x=>x.id!==bookId);
+            dataNow.loans = dataNow.loans.filter(l=>l.bookId!==bookId);
+            dataNow.holds = dataNow.holds.filter(h=>h.bookId!==bookId);
+            saveData(dataNow);
+            toast('Deleted', `Book "${book.title}" has been removed.`);
+            filter();
+          }
+          return;
+        }
+
+        const toggleBtn = e.target.closest('[data-toggle-avail]');
+        if(toggleBtn){
+          const bookId = toggleBtn.getAttribute('data-toggle-avail');
+          const dataNow = getData();
+          const book = dataNow.books.find(x=>x.id===bookId);
+          if(book){
+            book.available = !book.available;
+            saveData(dataNow);
+            toast('Updated', `Availability updated for "${book.title}".`);
+            filter();
+          }
+        }
+      });
+    }
 
     if(window.location.hash){
       const id = decodeURIComponent(window.location.hash.slice(1));
@@ -542,37 +662,53 @@
     const summary = $('[data-patron-summary]');
     if(summary){
       summary.innerHTML = `
-        <div class="meta">
-          <b>📧 Email</b>
-          <span>${escapeHtml(p.email || 'Not provided')}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>📧 Email</b>
+            <span>${escapeHtml(p.email || 'Not provided')}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>📞 Phone</b>
-          <span>${escapeHtml(p.phone || 'Not provided')}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>📞 Phone</b>
+            <span>${escapeHtml(p.phone || 'Not provided')}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>💰 Fines</b>
-          <span style="color:${(p.fines||0) > 0 ? 'var(--danger)' : 'var(--brand2)'}">$${Number(p.fines||0).toFixed(2)}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>💰 Fines</b>
+            <span style="color:${(p.fines||0) > 0 ? 'var(--danger)' : 'var(--brand2)'}">$${Number(p.fines||0).toFixed(2)}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>📚 Active Loans</b>
-          <span>${activeLoans.length} book${activeLoans.length !== 1 ? 's' : ''}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>📚 Active Loans</b>
+            <span>${activeLoans.length} book${activeLoans.length !== 1 ? 's' : ''}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>⏳ Holds</b>
-          <span>${data.holds.filter(h=>h.patronId===p.id).length} item${data.holds.filter(h=>h.patronId===p.id).length !== 1 ? 's' : ''}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>⏳ Holds</b>
+            <span>${data.holds.filter(h=>h.patronId===p.id).length} item${data.holds.filter(h=>h.patronId===p.id).length !== 1 ? 's' : ''}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>📖 Total Borrowed</b>
-          <span>${totalBorrowed} book${totalBorrowed !== 1 ? 's' : ''}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>📖 Total Borrowed</b>
+            <span>${totalBorrowed} book${totalBorrowed !== 1 ? 's' : ''}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>📅 Member Since</b>
-          <span>${fmtDate(membershipDate)}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>📅 Member Since</b>
+            <span>${fmtDate(membershipDate)}</span>
+          </div>
         </div>
-        <div class="meta">
-          <b>✅ Account Status</b>
-          <span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span>
+        <div class="col-3">
+          <div class="meta">
+            <b>✅ Account Status</b>
+            <span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span>
+          </div>
         </div>
       `;
     }
@@ -828,42 +964,262 @@
     return false;
   }
 
-  function initDashboard(){
-    if(!requireAdminOrRedirect()) return;
-
+  function getUserRole(){
     const data = getData();
+    if(data.session.isAdmin) return 'admin';
+    if(data.session.patronId) return 'user';
+    return 'guest';
+  }
 
-    const booksMount = $('[data-admin-books]');
+  function initDashboard(){
+    const data = getData();
+    const role = getUserRole();
+    const isAdmin = role === 'admin';
+    const isUser = role === 'user';
+    const isGuest = role === 'guest';
+
+    // Update header session UI based on role
+    const sessionUI = $('[data-session-ui]');
+    if(sessionUI){
+      if(isAdmin){
+        sessionUI.innerHTML = `
+          <span class="badge">Admin Mode</span>
+          <button class="btn danger" type="button" data-admin-signout>Sign out</button>
+        `;
+      } else if(isUser){
+        const p = patron();
+        sessionUI.innerHTML = `
+          <span class="badge">Signed in as <b style="color:var(--text)">${escapeHtml(p.name)}</b></span>
+          <button class="btn danger" type="button" data-signout>Sign out</button>
+        `;
+        $('[data-signout]')?.addEventListener('click', signOut);
+      } else {
+        sessionUI.innerHTML = `
+          <a class="btn primary" href="patron-login.html">Sign in</a>
+        `;
+      }
+      
+      $('[data-admin-signout]')?.addEventListener('click', ()=>{
+        setSession({isAdmin:false, patronId:null});
+        toast('Signed out', 'Admin session ended.');
+        setTimeout(()=>{ window.location.reload(); }, 250);
+      });
+    }
+
+    // Apply role-based visibility
+    function applyRoleVisibility(){
+      // Admin sections - always visible for admin
+      const adminSections = $$('[data-admin-section]');
+      adminSections.forEach(section => {
+        section.style.display = isAdmin ? 'block' : 'none';
+      });
+
+      // Admin buttons
+      const adminButtons = $$('[data-admin-add-book], [data-admin-add-event]');
+      adminButtons.forEach(btn => {
+        btn.style.display = isAdmin ? 'inline-flex' : 'none';
+      });
+
+      // Role hints
+      const roleHints = $$('[data-role-hint]');
+      roleHints.forEach(hint => {
+        if(isAdmin){
+          hint.textContent = 'Admin: You can add, edit, and delete items.';
+        } else if(isUser){
+          hint.textContent = 'User: You can view and interact with items.';
+        } else {
+          hint.textContent = 'Guest: Browse and view information only.';
+        }
+      });
+
+      // User controls - show reserve/hold buttons for users, sign in prompt for guests
+      const userActions = $$('[data-user-action]');
+      userActions.forEach(action => {
+        action.style.display = isUser ? 'inline-flex' : 'none';
+      });
+    }
+
+    // Smooth scroll for section navigation with header offset
+    const sectionNavs = $$('.section-nav');
+    sectionNavs.forEach(nav => {
+      nav.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const section = nav.getAttribute('data-section');
+        const target = $(`#${section}`);
+        if(target){
+          // Calculate header height (approximately 80px including padding)
+          const headerHeight = 80;
+          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Initialize dashboard overview
+    function initDashboardOverview(){
+      const statsMount = $('[data-dashboard-stats]');
+      if(!statsMount) return;
+
+      const totalBooks = data.books.length;
+      const availableBooks = data.books.filter(b=>b.available).length;
+      const checkedOutBooks = totalBooks - availableBooks;
+      const totalPatrons = data.patrons.length;
+      const activeLoans = data.loans.filter(l=>!l.returnedOn).length;
+      const activeHolds = data.holds.length;
+      const totalEvents = (data.events || []).length;
+      const overdueLoans = data.loans.filter(l=>{
+        if(l.returnedOn) return false;
+        const dueDate = new Date(l.dueOn);
+        const today = new Date();
+        return dueDate < today;
+      }).length;
+      const totalFines = data.patrons.reduce((sum, p)=>sum + (Number(p.fines) || 0), 0);
+
+      statsMount.innerHTML = `
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Total Books</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">${totalBooks}</div>
+              </div>
+              <div style="font-size:36px">📚</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>${availableBooks} available</span>
+              <span>•</span>
+              <span>${checkedOutBooks} checked out</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Total Patrons</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">${totalPatrons}</div>
+              </div>
+              <div style="font-size:36px">👥</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>${activeLoans} active loans</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Active Loans</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">${activeLoans}</div>
+              </div>
+              <div style="font-size:36px">📖</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>${overdueLoans > 0 ? `<span style="color:var(--danger)">${overdueLoans} overdue</span>` : 'All on time'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Active Holds</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">${activeHolds}</div>
+              </div>
+              <div style="font-size:36px">🔖</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>Pending requests</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Upcoming Events</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">${totalEvents}</div>
+              </div>
+              <div style="font-size:36px">📅</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>Scheduled programs</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card pad" style="min-height:140px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <div>
+                <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Total Fines</div>
+                <div style="font-size:32px; font-weight:700; color:var(--brand)">$${totalFines.toFixed(2)}</div>
+              </div>
+              <div style="font-size:36px">💰</div>
+            </div>
+            <div style="display:flex; gap:8px; font-size:12px; color:var(--muted)">
+              <span>Outstanding balance</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const patronsMount = $('[data-admin-patrons]');
     const loansMount = $('[data-admin-loans]');
+    const holdsMount = $('[data-admin-holds]');
+    const membersMount = $('[data-admin-members]');
 
-    function renderBooks(){
-      if(!booksMount) return;
-      const rows = data.books
-        .slice()
-        .sort((a,b)=>a.title.localeCompare(b.title))
-        .map(b=>{
-          return `
-            <tr>
-              <td><b>${escapeHtml(b.title)}</b><div style="color:var(--muted); font-size:12px">${escapeHtml(b.author)}</div></td>
-              <td>${escapeHtml(b.subject)}</td>
-              <td>${escapeHtml(b.format)}</td>
-              <td>${b.available ? '<span class="badge good">Available</span>' : '<span class="badge bad">Checked out</span>'}</td>
-              <td>
-                <button class="btn" type="button" data-toggle="${b.id}">Toggle Availability</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
+    function renderPatrons(){
+      if(!patronsMount) return;
+      if(!data.patrons.length){
+        patronsMount.innerHTML = '<div class="note">No patrons registered yet.</div>';
+        return;
+      }
 
-      booksMount.innerHTML = `
+      const rows = data.patrons.map(p=>{
+        const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
+        const totalLoans = data.loans.filter(l=>l.patronId===p.id).length;
+        const activeHolds = data.holds.filter(h=>h.patronId===p.id).length;
+        const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
+        
+        return `
+          <tr>
+            <td>
+              <div style="display:grid; gap:4px">
+                <b>${escapeHtml(p.name)}</b>
+                <div style="color:var(--muted); font-size:12px">${escapeHtml(p.email || 'No email')}</div>
+                <div style="color:var(--muted); font-size:12px">${escapeHtml(p.phone || 'No phone')}</div>
+              </div>
+            </td>
+            <td>${fmtDate(p.membershipDate || p.id)}</td>
+            <td>${activeLoans}</td>
+            <td>${activeHolds}</td>
+            <td>$${Number(p.fines||0).toFixed(2)}</td>
+            <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
+            <td>
+              <button class="btn" type="button" data-edit-patron="${p.id}">Edit</button>
+              <button class="btn danger" type="button" data-delete-patron="${p.id}">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      patronsMount.innerHTML = `
         <table class="table">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Subject</th>
-              <th>Format</th>
+              <th>Patron</th>
+              <th>Member Since</th>
+              <th>Active Loans</th>
+              <th>Holds</th>
+              <th>Fines</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -873,22 +1229,31 @@
 
     function renderLoans(){
       if(!loansMount) return;
-      if(!data.loans.length){
+      const activeLoans = data.loans.filter(l=>!l.returnedOn);
+      if(!activeLoans.length){
         loansMount.innerHTML = '<div class="note">No active loans.</div>';
         return;
       }
 
-      const rows = data.loans.map(l=>{
+      const rows = activeLoans.map(l=>{
         const b = data.books.find(x=>x.id===l.bookId);
         const p = data.patrons.find(x=>x.id===l.patronId);
+        const dueDate = new Date(l.dueOn);
+        const today = new Date();
+        const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        const isOverdue = daysUntilDue < 0;
+        
         return `
           <tr>
-            <td>${escapeHtml(b ? b.title : l.bookId)}</td>
+            <td><b>${escapeHtml(b ? b.title : l.bookId)}</b><div style="color:var(--muted); font-size:12px">${escapeHtml(b ? b.author : '')}</div></td>
             <td>${escapeHtml(p ? p.name : l.patronId)}</td>
             <td>${fmtDate(l.borrowedOn)}</td>
-            <td>${fmtDate(l.dueOn)}</td>
+            <td>${fmtDate(l.dueOn)} ${isOverdue ? '<span class="badge bad">Overdue</span>' : ''}</td>
             <td>${l.renewalsUsed}/${l.maxRenewals}</td>
             <td>${l.holdByOther ? '<span class="badge warn">Has hold</span>' : '<span class="badge">No hold</span>'}</td>
+            <td>
+              <button class="btn success" type="button" data-return-loan="${l.id}">Return</button>
+            </td>
           </tr>
         `;
       }).join('');
@@ -903,6 +1268,7 @@
               <th>Due</th>
               <th>Renewals</th>
               <th>Holds</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -910,51 +1276,468 @@
       `;
     }
 
-    renderBooks();
-    renderLoans();
-
-    booksMount?.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-toggle]');
-      if(!btn) return;
-      const id = btn.getAttribute('data-toggle');
-      const b = data.books.find(x=>x.id===id);
-      if(!b) return;
-      b.available = !b.available;
-      saveData(data);
-      toast('Updated', `Availability updated for “${b.title}”.`);
-      renderBooks();
-    });
-
-    const addForm = $('[data-add-book-form]');
-    addForm?.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const title = ($('[name=title]')?.value || '').trim();
-      const author = ($('[name=author]')?.value || '').trim();
-      const subject = ($('[name=subject]')?.value || '').trim();
-      const isbn = ($('[name=isbn]')?.value || '').trim();
-      const format = ($('[name=format]')?.value || '').trim();
-      const location = ($('[name=location]')?.value || '').trim();
-      if(!title || !author){
-        toast('Missing details', 'Please provide at least title and author.');
+    function renderHolds(){
+      if(!holdsMount) return;
+      if(!data.holds.length){
+        holdsMount.innerHTML = '<div class="note">No active holds.</div>';
         return;
       }
 
-      data.books.push({
-        id: uid('b'),
-        title,
-        author,
-        subject: subject || 'General',
-        isbn: isbn || '—',
-        format: format || 'Print',
-        location: location || 'Stacks',
-        available: true,
-        featured: false,
-        newArrival: true
+      const rows = data.holds.map(h=>{
+        const b = data.books.find(x=>x.id===h.bookId);
+        const p = data.patrons.find(x=>x.id===h.patronId);
+        const sameBookHolds = data.holds.filter(x=>x.bookId===h.bookId).sort((a,b)=>new Date(a.placedOn) - new Date(b.placedOn));
+        const position = sameBookHolds.findIndex(x=>x.id===h.id) + 1;
+        const isAvailable = b && b.available;
+        
+        return `
+          <tr>
+            <td><b>${escapeHtml(b ? b.title : h.bookId)}</b><div style="color:var(--muted); font-size:12px">${escapeHtml(b ? b.author : '')}</div></td>
+            <td>${escapeHtml(p ? p.name : h.patronId)}</td>
+            <td>${fmtDate(h.placedOn)}</td>
+            <td>#${position} of ${sameBookHolds.length}</td>
+            <td>${isAvailable ? '<span class="badge good">Available</span>' : '<span class="badge warn">Waiting</span>'}</td>
+            <td>
+              <button class="btn danger" type="button" data-delete-hold="${h.id}">Remove</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      holdsMount.innerHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Book</th>
+              <th>Patron</th>
+              <th>Placed On</th>
+              <th>Position</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    // Initialize Catalog section
+    function initCatalogSection(){
+      const mount = $('[data-catalog]');
+      const search = $('[data-search]');
+      const subject = $('[data-subject]');
+      const availability = $('[data-availability]');
+      const adminSection = $('[data-content-section="catalog"] [data-admin-section]');
+      const adminAddBtn = $('[data-admin-add-book]');
+
+      if(subject){
+        const subjects = Array.from(new Set(data.books.map(b=>b.subject))).sort();
+        subject.innerHTML = `<option value="">All subjects</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      }
+
+      function filter(){
+        const q = (search?.value || '').trim().toLowerCase();
+        const sub = subject?.value || '';
+        const av = availability?.value || '';
+
+        const list = data.books.filter(b=>{
+          const matchQ = !q || [b.title,b.author,b.subject,b.isbn,b.id].some(x=>String(x).toLowerCase().includes(q));
+          const matchSub = !sub || b.subject === sub;
+          const matchAv = !av || (av==='available' ? b.available : !b.available);
+          return matchQ && matchSub && matchAv;
+        });
+
+        // Pass role info to renderCatalog - admin gets full control, users get interaction, guests get read-only
+        renderCatalog(list, mount, isAdmin);
+        const count = $('[data-result-count]');
+        if(count) count.textContent = `${list.length} result(s)`;
+      }
+
+      ['input','change'].forEach(evt=>{
+        search?.addEventListener(evt, filter);
+        subject?.addEventListener(evt, filter);
+        availability?.addEventListener(evt, filter);
       });
-      saveData(data);
-      toast('Added', 'New book added to catalog.');
-      addForm.reset();
-      renderBooks();
+
+      filter();
+
+      // Admin: Add book
+      const addForm = $('[data-add-book-form]');
+      if(addForm && isAdmin){
+        addForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const dataNow = getData();
+          const title = ($('[name=title]', addForm)?.value || '').trim();
+          const author = ($('[name=author]', addForm)?.value || '').trim();
+          const subject = ($('[name=subject]', addForm)?.value || '').trim();
+          const isbn = ($('[name=isbn]', addForm)?.value || '').trim();
+          const format = ($('[name=format]', addForm)?.value || '').trim();
+          const location = ($('[name=location]', addForm)?.value || '').trim();
+          const cover = ($('[name=cover]', addForm)?.value || '').trim();
+          
+          if(!title || !author){
+            toast('Missing details', 'Please provide at least title and author.');
+            return;
+          }
+
+          dataNow.books.push({
+            id: uid('b'),
+            title,
+            author,
+            subject: subject || 'General',
+            isbn: isbn || '—',
+            format: format || 'Print',
+            location: location || 'Stacks',
+            cover: cover || undefined,
+            available: true,
+            featured: false,
+            newArrival: true
+          });
+          saveData(dataNow);
+          toast('Added', 'New book added to catalog.');
+          addForm.reset();
+          if(adminSection) adminSection.style.display = 'none';
+          filter();
+        });
+      }
+
+      adminAddBtn?.addEventListener('click', ()=>{
+        if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+        if(adminSection && adminSection.style.display === 'block'){
+          const headerHeight = 80;
+          const targetPosition = adminSection.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+
+      $('[data-cancel-add-book]')?.addEventListener('click', ()=>{
+        if(adminSection) adminSection.style.display = 'none';
+        if(addForm) addForm.reset();
+      });
+
+      // Admin: Delete book and toggle availability
+      if(isAdmin){
+        mount?.addEventListener('click', (e)=>{
+          const deleteBtn = e.target.closest('[data-delete-book]');
+          if(deleteBtn){
+            const bookId = deleteBtn.getAttribute('data-delete-book');
+            const book = data.books.find(x=>x.id===bookId);
+            if(!book) return;
+            
+            if(confirm(`Delete book "${book.title}" from catalog?`)){
+              const dataNow = getData();
+              dataNow.books = dataNow.books.filter(x=>x.id!==bookId);
+              dataNow.loans = dataNow.loans.filter(l=>l.bookId!==bookId);
+              dataNow.holds = dataNow.holds.filter(h=>h.bookId!==bookId);
+              saveData(dataNow);
+              toast('Deleted', `Book "${book.title}" has been removed.`);
+              filter();
+            }
+            return;
+          }
+
+          const toggleBtn = e.target.closest('[data-toggle-avail]');
+          if(toggleBtn){
+            const bookId = toggleBtn.getAttribute('data-toggle-avail');
+            const dataNow = getData();
+            const book = dataNow.books.find(x=>x.id===bookId);
+            if(book){
+              book.available = !book.available;
+              saveData(dataNow);
+              toast('Updated', `Availability updated for "${book.title}".`);
+              filter();
+            }
+          }
+        });
+      }
+    }
+
+    // Initialize Events section
+    function initEventsSection(){
+      const eventsList = $('[data-events-list]');
+      const adminSection = $('[data-content-section="events"] [data-admin-section]');
+      const adminAddBtn = $('[data-admin-add-event]');
+
+      function renderEvents(){
+        if(!eventsList) return;
+        const events = data.events || [];
+        
+        if(!events.length){
+          eventsList.innerHTML = '<div class="col-12"><div class="note">No events scheduled.</div></div>';
+          return;
+        }
+
+        eventsList.innerHTML = events.map(e=>{
+          const deleteBtn = isAdmin ? `<button class="btn danger" type="button" data-delete-event="${e.id}" style="margin-top:12px">Delete</button>` : '';
+          return `
+            <div class="col-6">
+              <div class="card pad">
+                <div class="section-title">
+                  <h2>${escapeHtml(e.title)}</h2>
+                  <p>${escapeHtml(e.schedule)}</p>
+                </div>
+                <div class="note">
+                  ${e.time ? `Time: ${escapeHtml(e.time)}<br />` : ''}
+                  ${e.location ? `Location: ${escapeHtml(e.location)}<br />` : ''}
+                  ${e.description ? escapeHtml(e.description) : ''}
+                </div>
+                ${deleteBtn}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      renderEvents();
+
+      // Admin: Add event
+      const addForm = $('[data-add-event-form]');
+      if(addForm && isAdmin){
+        addForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const dataNow = getData();
+          const title = ($('[name=title]', addForm)?.value || '').trim();
+          const schedule = ($('[name=schedule]', addForm)?.value || '').trim();
+          const time = ($('[name=time]', addForm)?.value || '').trim();
+          const location = ($('[name=location]', addForm)?.value || '').trim();
+          const description = ($('[name=description]', addForm)?.value || '').trim();
+          
+          if(!title || !schedule){
+            toast('Missing details', 'Please provide at least title and schedule.');
+            return;
+          }
+
+          if(!dataNow.events) dataNow.events = [];
+          dataNow.events.push({
+            id: uid('e'),
+            title,
+            schedule,
+            time: time || 'TBA',
+            location: location || 'TBA',
+            description: description || ''
+          });
+          saveData(dataNow);
+          toast('Added', 'New event added.');
+          addForm.reset();
+          if(adminSection) adminSection.style.display = 'none';
+          renderEvents();
+        });
+      }
+
+      adminAddBtn?.addEventListener('click', ()=>{
+        if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+        if(adminSection && adminSection.style.display === 'block'){
+          const headerHeight = 80;
+          const targetPosition = adminSection.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+
+      $('[data-cancel-add-event]')?.addEventListener('click', ()=>{
+        if(adminSection) adminSection.style.display = 'none';
+        if(addForm) addForm.reset();
+      });
+
+      // Admin: Delete event
+      if(isAdmin){
+        eventsList?.addEventListener('click', (e)=>{
+          const deleteBtn = e.target.closest('[data-delete-event]');
+          if(deleteBtn){
+            const eventId = deleteBtn.getAttribute('data-delete-event');
+            const event = data.events.find(x=>x.id===eventId);
+            if(!event) return;
+            
+            if(confirm(`Delete event "${event.title}"?`)){
+              const dataNow = getData();
+              dataNow.events = dataNow.events.filter(x=>x.id!==eventId);
+              saveData(dataNow);
+              toast('Deleted', `Event "${event.title}" has been removed.`);
+              renderEvents();
+            }
+          }
+        });
+      }
+    }
+
+    // Initialize Membership section (patrons management)
+    function initMembershipSection(){
+      // Admin members view (if separate from patrons)
+      if(membersMount && isAdmin){
+        const patrons = data.patrons || [];
+        if(!patrons.length){
+          membersMount.innerHTML = '<div class="note">No members registered yet.</div>';
+        } else {
+          const rows = patrons.map(p=>{
+            const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
+            const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
+            
+            return `
+              <tr>
+                <td>
+                  <div style="display:grid; gap:4px">
+                    <b>${escapeHtml(p.name)}</b>
+                    <div style="color:var(--muted); font-size:12px">${escapeHtml(p.email || 'No email')}</div>
+                    <div style="color:var(--muted); font-size:12px">${escapeHtml(p.phone || 'No phone')}</div>
+                  </div>
+                </td>
+                <td>${fmtDate(p.membershipDate || p.id)}</td>
+                <td>${activeLoans}</td>
+                <td>$${Number(p.fines||0).toFixed(2)}</td>
+                <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
+                <td>
+                  <button class="btn" type="button" data-edit-member="${p.id}">Edit</button>
+                  <button class="btn danger" type="button" data-delete-member="${p.id}">Delete</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          membersMount.innerHTML = `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Member Since</th>
+                  <th>Active Loans</th>
+                  <th>Fines</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          `;
+
+          // Edit/Delete member handlers
+          membersMount.addEventListener('click', (e)=>{
+            const editBtn = e.target.closest('[data-edit-member]');
+            if(editBtn){
+              const patronId = editBtn.getAttribute('data-edit-member');
+              const p = data.patrons.find(x=>x.id===patronId);
+              if(!p) return;
+              
+              const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
+              if(newFines !== null){
+                const fines = parseFloat(newFines) || 0;
+                p.fines = fines;
+                saveData(data);
+                toast('Updated', `Fines updated for ${p.name}.`);
+                initMembershipSection();
+              }
+              return;
+            }
+
+            const deleteBtn = e.target.closest('[data-delete-member]');
+            if(deleteBtn){
+              const patronId = deleteBtn.getAttribute('data-delete-member');
+              const p = data.patrons.find(x=>x.id===patronId);
+              if(!p) return;
+              
+              if(confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)){
+                const dataNow = getData();
+                dataNow.patrons = dataNow.patrons.filter(x=>x.id!==patronId);
+                dataNow.loans = dataNow.loans.filter(l=>l.patronId!==patronId);
+                dataNow.holds = dataNow.holds.filter(h=>h.patronId!==patronId);
+                saveData(dataNow);
+                toast('Deleted', `Member "${p.name}" has been removed.`);
+                initMembershipSection();
+                renderPatrons();
+                renderLoans();
+                renderHolds();
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // Apply role-based visibility
+    applyRoleVisibility();
+
+    // Initialize all sections
+    initDashboardOverview();
+    renderPatrons();
+    renderLoans();
+    renderHolds();
+    initCatalogSection();
+    initEventsSection();
+    initMembershipSection();
+
+    // Edit patron
+    patronsMount?.addEventListener('click', (e)=>{
+      const editBtn = e.target.closest('[data-edit-patron]');
+      if(editBtn){
+        const patronId = editBtn.getAttribute('data-edit-patron');
+        const p = data.patrons.find(x=>x.id===patronId);
+        if(!p) return;
+        
+        const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
+        if(newFines !== null){
+          const fines = parseFloat(newFines) || 0;
+          p.fines = fines;
+          saveData(data);
+          toast('Updated', `Fines updated for ${p.name}.`);
+          renderPatrons();
+        }
+        return;
+      }
+
+      const deleteBtn = e.target.closest('[data-delete-patron]');
+      if(deleteBtn){
+        const patronId = deleteBtn.getAttribute('data-delete-patron');
+        const p = data.patrons.find(x=>x.id===patronId);
+        if(!p) return;
+        
+        if(confirm(`Delete patron "${p.name}"? This will also remove all their loans and holds.`)){
+          data.patrons = data.patrons.filter(x=>x.id!==patronId);
+          data.loans = data.loans.filter(l=>l.patronId!==patronId);
+          data.holds = data.holds.filter(h=>h.patronId!==patronId);
+          saveData(data);
+          toast('Deleted', `Patron "${p.name}" has been removed.`);
+          renderPatrons();
+          renderLoans();
+          renderHolds();
+        }
+      }
+    });
+
+    // Return loan
+    loansMount?.addEventListener('click', (e)=>{
+      const returnBtn = e.target.closest('[data-return-loan]');
+      if(returnBtn){
+        const loanId = returnBtn.getAttribute('data-return-loan');
+        const loan = data.loans.find(x=>x.id===loanId);
+        if(!loan) return;
+        
+        loan.returnedOn = todayISO();
+        const book = data.books.find(x=>x.id===loan.bookId);
+        if(book) book.available = true;
+        saveData(data);
+        toast('Returned', 'Book has been returned.');
+        renderLoans();
+        renderPatrons();
+      }
+    });
+
+    // Delete hold
+    holdsMount?.addEventListener('click', (e)=>{
+      const deleteBtn = e.target.closest('[data-delete-hold]');
+      if(deleteBtn){
+        const holdId = deleteBtn.getAttribute('data-delete-hold');
+        const hold = data.holds.find(x=>x.id===holdId);
+        if(!hold) return;
+        
+        data.holds = data.holds.filter(x=>x.id!==holdId);
+        saveData(data);
+        toast('Removed', 'Hold has been removed.');
+        renderHolds();
+      }
     });
 
     const signOutBtn = $('[data-admin-signout]');
@@ -964,15 +1747,222 @@
       setTimeout(()=>{ window.location.href = 'index.html'; }, 250);
     });
 
-    const resetBtn = $('[data-reset-demo]');
-    resetBtn?.addEventListener('click', ()=>{
-      localStorage.removeItem(STORAGE_KEY);
-      toast('Reset', 'Demo data reset. Reloading...');
-      setTimeout(()=>{ window.location.reload(); }, 350);
+    // Reset button removed - no reset functionality needed
+  }
+
+  function initEventsPage(){
+    const data = getData();
+    const isAdmin = data.session.isAdmin;
+    const eventsList = $('[data-events-list]');
+    const adminSection = $('[data-admin-section]');
+    const adminAddBtn = $('[data-admin-add-event]');
+
+    if(isAdmin){
+      if(adminSection) adminSection.style.display = 'block';
+      if(adminAddBtn) adminAddBtn.style.display = 'inline-flex';
+    } else {
+      if(adminSection) adminSection.style.display = 'none';
+      if(adminAddBtn) adminAddBtn.style.display = 'none';
+    }
+
+    function renderEvents(){
+      if(!eventsList) return;
+      const events = data.events || [];
+      
+      if(!events.length){
+        eventsList.innerHTML = '<div class="col-12"><div class="note">No events scheduled.</div></div>';
+        return;
+      }
+
+      eventsList.innerHTML = events.map(e=>{
+        const deleteBtn = isAdmin ? `<button class="btn danger" type="button" data-delete-event="${e.id}" style="margin-top:12px">Delete</button>` : '';
+        return `
+          <div class="col-6">
+            <div class="card pad">
+              <div class="section-title">
+                <h2>${escapeHtml(e.title)}</h2>
+                <p>${escapeHtml(e.schedule)}</p>
+              </div>
+              <div class="note">
+                ${e.time ? `Time: ${escapeHtml(e.time)}<br />` : ''}
+                ${e.location ? `Location: ${escapeHtml(e.location)}<br />` : ''}
+                ${e.description ? escapeHtml(e.description) : ''}
+              </div>
+              ${deleteBtn}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderEvents();
+
+    // Admin: Add event
+    const addForm = $('[data-add-event-form]');
+    if(addForm && isAdmin){
+      addForm.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const dataNow = getData();
+        const title = ($('[name=title]', addForm)?.value || '').trim();
+        const schedule = ($('[name=schedule]', addForm)?.value || '').trim();
+        const time = ($('[name=time]', addForm)?.value || '').trim();
+        const location = ($('[name=location]', addForm)?.value || '').trim();
+        const description = ($('[name=description]', addForm)?.value || '').trim();
+        
+        if(!title || !schedule){
+          toast('Missing details', 'Please provide at least title and schedule.');
+          return;
+        }
+
+        if(!dataNow.events) dataNow.events = [];
+        dataNow.events.push({
+          id: uid('e'),
+          title,
+          schedule,
+          time: time || 'TBA',
+          location: location || 'TBA',
+          description: description || ''
+        });
+        saveData(dataNow);
+        toast('Added', 'New event added.');
+        addForm.reset();
+        if(adminSection) adminSection.style.display = 'none';
+        renderEvents();
+      });
+    }
+
+    // Admin: Toggle add form
+    adminAddBtn?.addEventListener('click', ()=>{
+      if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+      if(adminSection && adminSection.style.display === 'block'){
+        adminSection.scrollIntoView({behavior:'smooth', block:'start'});
+      }
     });
+
+    $('[data-cancel-add-event]')?.addEventListener('click', ()=>{
+      if(adminSection) adminSection.style.display = 'none';
+      if(addForm) addForm.reset();
+    });
+
+    // Admin: Delete event
+    if(isAdmin){
+      eventsList?.addEventListener('click', (e)=>{
+        const deleteBtn = e.target.closest('[data-delete-event]');
+        if(deleteBtn){
+          const eventId = deleteBtn.getAttribute('data-delete-event');
+          const event = data.events.find(x=>x.id===eventId);
+          if(!event) return;
+          
+          if(confirm(`Delete event "${event.title}"?`)){
+            const dataNow = getData();
+            dataNow.events = dataNow.events.filter(x=>x.id!==eventId);
+            saveData(dataNow);
+            toast('Deleted', `Event "${event.title}" has been removed.`);
+            renderEvents();
+          }
+        }
+      });
+    }
   }
 
   function initMembership(){
+    const data = getData();
+    const isAdmin = data.session.isAdmin;
+    const adminSection = $('[data-admin-section]');
+    const membersMount = $('[data-admin-members]');
+
+    if(isAdmin && adminSection){
+      adminSection.style.display = 'block';
+    } else if(adminSection){
+      adminSection.style.display = 'none';
+    }
+
+    // Admin: Render members list
+    if(isAdmin && membersMount){
+      const patrons = data.patrons || [];
+      if(!patrons.length){
+        membersMount.innerHTML = '<div class="note">No members registered yet.</div>';
+      } else {
+        const rows = patrons.map(p=>{
+          const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
+          const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
+          
+          return `
+            <tr>
+              <td>
+                <div style="display:grid; gap:4px">
+                  <b>${escapeHtml(p.name)}</b>
+                  <div style="color:var(--muted); font-size:12px">${escapeHtml(p.email || 'No email')}</div>
+                  <div style="color:var(--muted); font-size:12px">${escapeHtml(p.phone || 'No phone')}</div>
+                </div>
+              </td>
+              <td>${fmtDate(p.membershipDate || p.id)}</td>
+              <td>${activeLoans}</td>
+              <td>$${Number(p.fines||0).toFixed(2)}</td>
+              <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
+              <td>
+                <button class="btn" type="button" data-edit-member="${p.id}">Edit</button>
+                <button class="btn danger" type="button" data-delete-member="${p.id}">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        membersMount.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Member Since</th>
+                <th>Active Loans</th>
+                <th>Fines</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+
+        // Edit/Delete member handlers
+        membersMount.addEventListener('click', (e)=>{
+          const editBtn = e.target.closest('[data-edit-member]');
+          if(editBtn){
+            const patronId = editBtn.getAttribute('data-edit-member');
+            const p = data.patrons.find(x=>x.id===patronId);
+            if(!p) return;
+            
+            const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
+            if(newFines !== null){
+              const fines = parseFloat(newFines) || 0;
+              p.fines = fines;
+              saveData(data);
+              toast('Updated', `Fines updated for ${p.name}.`);
+              initMembership();
+            }
+            return;
+          }
+
+          const deleteBtn = e.target.closest('[data-delete-member]');
+          if(deleteBtn){
+            const patronId = deleteBtn.getAttribute('data-delete-member');
+            const p = data.patrons.find(x=>x.id===patronId);
+            if(!p) return;
+            
+            if(confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)){
+              const dataNow = getData();
+              dataNow.patrons = dataNow.patrons.filter(x=>x.id!==patronId);
+              dataNow.loans = dataNow.loans.filter(l=>l.patronId!==patronId);
+              dataNow.holds = dataNow.holds.filter(h=>h.patronId!==patronId);
+              saveData(dataNow);
+              toast('Deleted', `Member "${p.name}" has been removed.`);
+              initMembership();
+            }
+          }
+        });
+      }
+    }
+
     const form = $('[data-membership-form]');
     form?.addEventListener('submit', (e)=>{
       e.preventDefault();
@@ -983,15 +1973,15 @@
         return;
       }
 
-      const data = getData();
-      const existing = data.patrons.find(p=>p.email.toLowerCase()===email.toLowerCase());
+      const dataNow = getData();
+      const existing = dataNow.patrons.find(p=>p.email.toLowerCase()===email.toLowerCase());
       if(existing){
         toast('Already registered', 'A patron account already exists for that email. Try signing in.');
         return;
       }
 
       const patronId = uid('p');
-      data.patrons.push({
+      dataNow.patrons.push({
         id: patronId,
         name,
         email,
@@ -1000,7 +1990,7 @@
         maxRenewalsPerLoan: 2,
         heavyFineThreshold: 200
       });
-      saveData(data);
+      saveData(dataNow);
 
       toast('Registration submitted', 'Your patron account was created (demo). Signing you in...');
       setSession({patronId, isAdmin:false});
@@ -1051,10 +2041,32 @@
     }
   }
 
+  function initBackToTop(){
+    const backToTopBtn = $('[data-back-to-top]');
+    if(!backToTopBtn) return;
+
+    function toggleBackToTop(){
+      if(window.scrollY > 300){
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }
+
+    window.addEventListener('scroll', toggleBackToTop);
+    toggleBackToTop(); // Check initial state
+
+    backToTopBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  }
+
   function initPage(){
     initTheme();
     setActiveNav();
     initHeaderSessionUI();
+    initBackToTop();
 
     const page = document.body.getAttribute('data-page');
     if(page==='home' || page==='home-2') initHome();
@@ -1062,6 +2074,7 @@
     if(page==='patron-login') initPatronLogin();
     if(page==='patron-account') initPatronAccount();
     if(page==='membership') initMembership();
+    if(page==='events') initEventsPage();
     if(page==='dashboard') initDashboard();
     
     // Initialize library info for pages that need it

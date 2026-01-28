@@ -96,8 +96,68 @@
 
         <div class="controls" style="margin-top:12px">
           <span class="badge" data-result-count></span>
-          <a class="btn" href="patron-account.html">My Loans / Renew</a>
+          <a class="btn" href="patron-account.html" data-patron-link>My Loans / Renew</a>
+          <button class="btn primary" type="button" data-admin-add-book style="display:none">+ Add Book</button>
         </div>
+      </div>
+    </section>
+
+    <section class="section" data-admin-section style="display:none">
+      <div class="section-title">
+        <h2>Add New Book</h2>
+        <p>Add a book to the catalog</p>
+      </div>
+      <div class="card pad">
+        <form data-add-book-form>
+          <div class="grid">
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Title</div>
+                <input class="input" name="title" type="text" placeholder="Book title" required />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Author</div>
+                <input class="input" name="author" type="text" placeholder="Author" required />
+              </label>
+            </div>
+            <div class="col-4">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Subject</div>
+                <input class="input" name="subject" type="text" placeholder="e.g., Science" />
+              </label>
+            </div>
+            <div class="col-4">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">ISBN</div>
+                <input class="input" name="isbn" type="text" placeholder="978..." />
+              </label>
+            </div>
+            <div class="col-4">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Format</div>
+                <input class="input" name="format" type="text" placeholder="Print / E-Book" />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Location</div>
+                <input class="input" name="location" type="text" placeholder="Adult Fiction / Children / Digital" />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Cover Image URL (optional)</div>
+                <input class="input" name="cover" type="url" placeholder="https://..." />
+              </label>
+            </div>
+            <div class="col-12">
+              <button class="btn primary" type="submit">Add Book</button>
+              <button class="btn" type="button" data-cancel-add-book>Cancel</button>
+            </div>
+          </div>
+        </form>
       </div>
     </section>
 

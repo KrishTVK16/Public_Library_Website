@@ -131,9 +131,10 @@ img{max-width:100%; display:block}
 .site-header{
   position:sticky;
   top:0;
-  z-index:40;
-  background:rgba(247, 243, 233, 0.95);
+  z-index:100;
+  background:rgba(247, 243, 233, 0.98);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom:2px solid var(--border);
   box-shadow: 0 2px 8px rgba(112, 66, 20, 0.1);
   transition: background 0.3s ease, border-color 0.3s ease;
@@ -144,9 +145,67 @@ img{max-width:100%; display:block}
 }
 
 [data-theme="dark"] .site-header{
-  background:rgba(43, 43, 43, 0.95);
+  background:rgba(43, 43, 43, 0.98);
   border-bottom:2px solid var(--border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Fixed header for dashboard page only */
+[data-page="dashboard"] .site-header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  width:100%;
+  z-index:100;
+}
+
+/* Add padding to main content to account for fixed header height */
+[data-page="dashboard"] main{
+  padding-top:80px;
+}
+
+.back-to-top{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:var(--brand);
+  color:var(--old-paper-beige);
+  border:2px solid var(--border);
+  box-shadow: var(--shadow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  cursor:pointer;
+  z-index:50;
+  opacity:0;
+  visibility:hidden;
+  transition: all 0.3s ease;
+  text-decoration:none;
+}
+
+.back-to-top.visible{
+  opacity:1;
+  visibility:visible;
+}
+
+.back-to-top:hover{
+  background:var(--muted-olive);
+  transform:translateY(-2px);
+  box-shadow: 0 4px 12px rgba(112, 66, 20, 0.25);
+}
+
+[data-theme="dark"] .back-to-top{
+  background:var(--brand);
+  color:var(--old-paper-beige);
+}
+
+[data-theme="dark"] .back-to-top:hover{
+  background:var(--brand2);
 }
 
 .header-inner{

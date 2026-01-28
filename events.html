@@ -70,59 +70,60 @@
       </div>
     </section>
 
-    <section class="section">
-      <div class="grid">
-        <div class="col-6">
-          <div class="card pad">
-            <div class="section-title">
-              <h2>Story Time (Kids)</h2>
-              <p>Every Saturday</p>
-            </div>
-            <div class="note">
-              Time: 11:00 AM – 12:00 PM
-              <br />Location: Children’s Corner
-              <br />Includes read-aloud sessions and fun activities.
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="card pad">
-            <div class="section-title">
-              <h2>Career & Resume Clinic</h2>
-              <p>2nd Wednesday</p>
-            </div>
-            <div class="note">
-              Time: 4:00 PM – 6:00 PM
-              <br />Location: Community Hall
-              <br />Bring your resume and get one-on-one guidance.
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="card pad">
-            <div class="section-title">
-              <h2>Digital Literacy Workshop</h2>
-              <p>Monthly</p>
-            </div>
-            <div class="note">
-              Topics: Online safety, email basics, and e-resources
-              <br />Registration: Required at the help desk
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="card pad">
-            <div class="section-title">
-              <h2>Book Club Meetup</h2>
-              <p>Every Friday</p>
-            </div>
-            <div class="note">
-              Time: 5:30 PM – 6:30 PM
-              <br />Theme rotates weekly. Check announcements on the notice board.
-            </div>
-          </div>
-        </div>
+    <section class="section" data-admin-section style="display:none">
+      <div class="section-title">
+        <h2>Add New Event</h2>
+        <p>Add an event to the calendar</p>
       </div>
+      <div class="card pad">
+        <form data-add-event-form>
+          <div class="grid">
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Event Title</div>
+                <input class="input" name="title" type="text" placeholder="Event name" required />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Schedule</div>
+                <input class="input" name="schedule" type="text" placeholder="e.g., Every Saturday" required />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Time</div>
+                <input class="input" name="time" type="text" placeholder="e.g., 11:00 AM – 12:00 PM" />
+              </label>
+            </div>
+            <div class="col-6">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Location</div>
+                <input class="input" name="location" type="text" placeholder="e.g., Community Hall" />
+              </label>
+            </div>
+            <div class="col-12">
+              <label>
+                <div style="color:var(--muted); font-size:12px; margin-bottom:6px">Description</div>
+                <textarea class="input" name="description" rows="3" placeholder="Event details..."></textarea>
+              </label>
+            </div>
+            <div class="col-12">
+              <button class="btn primary" type="submit">Add Event</button>
+              <button class="btn" type="button" data-cancel-add-event>Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Upcoming Events</h2>
+        <p>Library programs and workshops</p>
+        <button class="btn primary" type="button" data-admin-add-event style="display:none; margin-left:auto">+ Add Event</button>
+      </div>
+      <div class="grid" data-events-list></div>
     </section>
   </main>
 
