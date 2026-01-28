@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patron Sign in | City Central Public Library</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="patron-login">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Home">
+        <div class="brand-mark">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+            <defs>
+              <linearGradient id="bookGradLogin" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#704214;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6B7A4F;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path d="M 15 20 L 15 80 Q 15 85 20 85 L 45 85 Q 50 85 50 80 L 50 20 Q 50 15 45 15 L 20 15 Q 15 15 15 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 50 20 L 50 80 Q 50 85 55 85 L 80 85 Q 85 85 85 80 L 85 20 Q 85 15 80 15 L 55 15 Q 50 15 50 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 45 15 L 55 15 L 55 85 L 45 85 Z" fill="url(#bookGradLogin)"/>
+            <line x1="22" y1="28" x2="43" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="38" x2="43" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="48" x2="43" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="58" x2="43" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="68" x2="43" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="28" x2="78" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="38" x2="78" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="48" x2="78" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="58" x2="78" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="68" x2="78" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <strong>City Central Public Library</strong>
+          <span>Patron Account</span>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="catalog.html" data-nav="catalog">Catalog</a>
+        <a href="digital-resources.html" data-nav="digital">Digital</a>
+        <a href="events.html" data-nav="events">Events</a>
+        <a href="faq.html" data-nav="faq">FAQs</a>
+        <a href="membership.html" data-nav="membership">Membership</a>
+        <a href="contact.html" data-nav="contact">Contact</a>
+      </nav>
+
+      <div class="controls" style="display:flex; align-items:center; gap:10px">
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
+          <span data-theme-icon>🌙</span>
+        </button>
+        <div data-session-ui></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="card pad">
+          <span class="kicker">Patron Sign in (Demo)</span>
+          <h1 class="h1" style="margin-bottom:6px">Access your Patron Account</h1>
+          <p class="p">View borrowed items, check due dates, renew books online, and manage holds.</p>
+
+          <div class="section" style="padding-top:20px; padding-bottom:0; margin-top:20px; border-top:1px solid var(--border)">
+            <div class="section-title">
+              <h2>Quick sign-in</h2>
+              <p>One click demo accounts</p>
+            </div>
+            <div class="controls" data-quick-login style="margin-top:12px"></div>
+          </div>
+
+          <div class="section" style="padding-top:20px; margin-top:20px; border-top:1px solid var(--border)">
+            <div class="section-title">
+              <h2>Sign in by email</h2>
+              <p>Looks up a demo patron record</p>
+            </div>
+
+            <form data-login-form style="margin-top:12px">
+              <div class="grid">
+                <div class="col-8">
+                  <label>
+                    <div style="color:var(--muted); font-size:12px; margin-bottom:6px; font-weight:500">Email</div>
+                    <input class="input" name="email" type="email" placeholder="you@example.com" required />
+                  </label>
+                </div>
+                <div class="col-4" style="display:flex; align-items:flex-end; padding-bottom:0">
+                  <button class="btn primary" type="submit" style="width:100%">Sign in</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="controls" style="margin-top:16px">
+              <a class="btn" href="membership.html">New member registration</a>
+              <a class="btn" href="catalog.html">Browse catalog</a>
+            </div>
+          </div>
+        </div>
+
+        <aside class="card pad">
+          <span class="kicker">Admin access</span>
+          <h2 style="margin:10px 0 8px; font-size:18px; font-weight:600">Admin Dashboard</h2>
+          <p class="p" style="margin-bottom:16px">For demonstration, admin access uses a PIN and opens <b>dashboard.html</b>.</p>
+
+          <form data-admin-form>
+            <label>
+              <div style="color:var(--muted); font-size:12px; margin-bottom:6px; font-weight:500">Admin PIN (Demo: 1234)</div>
+              <input class="input" name="adminPin" type="password" placeholder="Enter PIN" required />
+            </label>
+            <button class="btn warn" type="submit" style="margin-top:12px; width:100%">Open Dashboard</button>
+          </form>
+
+          <div class="note" style="margin-top:16px">
+            Renewal rules in the Patron Account:
+            the item must not be reserved by another user, you must not exceed the renewal limit,
+            and there must be no heavy fines.
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© <span data-year></span> City Central Public Library</div>
+      <div>
+        <a href="patron-account.html">Patron Account</a> •
+        <a href="membership.html">Membership</a> •
+        <a href="dashboard.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

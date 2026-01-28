@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog Post | City Central Public Library</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="blog-details">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Home">
+        <div class="brand-mark">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+            <defs>
+              <linearGradient id="bookGradBlogDetails" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#704214;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6B7A4F;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path d="M 15 20 L 15 80 Q 15 85 20 85 L 45 85 Q 50 85 50 80 L 50 20 Q 50 15 45 15 L 20 15 Q 15 15 15 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 50 20 L 50 80 Q 50 85 55 85 L 80 85 Q 85 85 85 80 L 85 20 Q 85 15 80 15 L 55 15 Q 50 15 50 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 45 15 L 55 15 L 55 85 L 45 85 Z" fill="url(#bookGradBlogDetails)"/>
+            <line x1="22" y1="28" x2="43" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="38" x2="43" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="48" x2="43" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="58" x2="43" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="68" x2="43" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="28" x2="78" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="38" x2="78" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="48" x2="78" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="58" x2="78" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="68" x2="78" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <strong>City Central Public Library</strong>
+          <span>Library Blog</span>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="catalog.html" data-nav="catalog">Catalog</a>
+        <a href="digital-resources.html" data-nav="digital">Digital</a>
+        <a href="events.html" data-nav="events">Events</a>
+        <a href="faq.html" data-nav="faq">FAQs</a>
+        <a href="membership.html" data-nav="membership">Membership</a>
+        <a href="contact.html" data-nav="contact">Contact</a>
+      </nav>
+
+      <div class="controls" style="display:flex; align-items:center; gap:10px">
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
+          <span data-theme-icon>🌙</span>
+        </button>
+        <div data-session-ui></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero">
+      <div class="card pad">
+        <div class="controls" style="margin-bottom:12px">
+          <a class="btn" href="blog.html">← Back to Blog</a>
+        </div>
+        <span class="kicker" data-post-category>Library News</span>
+        <h1 class="h1" data-post-title>Blog Post Title</h1>
+        <div style="display:flex; gap:12px; margin-top:8px; color:var(--muted); font-size:13px">
+          <span data-post-date>Published on March 15, 2024</span>
+          <span>•</span>
+          <span data-post-author>By Library Staff</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card pad">
+        <div data-post-content style="line-height:1.8; color:var(--text)">
+          <p class="p">Select a blog post from the <a href="blog.html" style="color:var(--brand); text-decoration:underline">blog page</a> to read the full article.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Related Posts</h2>
+        <p>More from our blog</p>
+      </div>
+      <div class="controls">
+        <a class="btn primary" href="blog.html">View All Posts</a>
+        <a class="btn" href="catalog.html">Browse Catalog</a>
+        <a class="btn" href="events.html">Upcoming Events</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© <span data-year></span> City Central Public Library</div>
+      <div>
+        <a href="patron-login.html">Patron Sign in</a> •
+        <a href="membership.html">Membership</a> •
+        <a href="dashboard.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Blog post handler
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get('id');
+      
+      const posts = {
+        '1': {
+          title: 'New Arrivals: Spring 2024 Collection',
+          category: 'Collection Updates',
+          date: 'March 15, 2024',
+          author: 'Library Staff',
+          content: `
+            <p class="p">We're excited to announce our latest collection additions for Spring 2024! This season brings a diverse selection of new titles across multiple genres.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Featured Titles</h3>
+            <ul style="margin:0 0 20px; padding-left:20px; color:var(--muted)">
+              <li><strong>The Midnight Library</strong> by Matt Haig - A thought-provoking novel about life's infinite possibilities</li>
+              <li><strong>Project Hail Mary</strong> by Andy Weir - A thrilling space adventure</li>
+              <li><strong>The Seven Husbands of Evelyn Hugo</strong> by Taylor Jenkins Reid - A captivating historical fiction</li>
+            </ul>
+            <h3 style="margin:20px 0 10px; font-size:18px">Non-Fiction Highlights</h3>
+            <p class="p">Our non-fiction section has been expanded with new titles on science, history, and self-improvement. Check out our latest additions in the catalog!</p>
+            <p class="p">All new arrivals are available for immediate checkout. Visit our catalog to browse and reserve your favorites.</p>
+          `
+        },
+        '2': {
+          title: 'Author Spotlight: Local Writers Series',
+          category: 'Author Spotlight',
+          date: 'March 10, 2024',
+          author: 'Library Staff',
+          content: `
+            <p class="p">This month, we're highlighting our local authors program, featuring talented writers from our community.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Upcoming Author Events</h3>
+            <p class="p">Join us for our monthly author talk series where local writers share their work and discuss their writing process.</p>
+            <ul style="margin:0 0 20px; padding-left:20px; color:var(--muted)">
+              <li><strong>March 20, 7:00 PM</strong> - Poetry Reading with Sarah Johnson</li>
+              <li><strong>March 27, 6:30 PM</strong> - Mystery Writers Panel Discussion</li>
+              <li><strong>April 5, 7:00 PM</strong> - Young Adult Fiction Workshop</li>
+            </ul>
+            <h3 style="margin:20px 0 10px; font-size:18px">Supporting Local Talent</h3>
+            <p class="p">We're proud to support our local writing community by providing a platform for authors to share their work. If you're a local author interested in participating, please contact our events coordinator.</p>
+          `
+        },
+        '3': {
+          title: 'Reading Recommendations: Mystery & Thriller',
+          category: 'Reading Lists',
+          date: 'March 5, 2024',
+          author: 'Reference Librarian',
+          content: `
+            <p class="p">Looking for your next page-turner? Our reference librarians have curated this month's must-read mystery and thriller recommendations.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Top Picks</h3>
+            <ul style="margin:0 0 20px; padding-left:20px; color:var(--muted)">
+              <li><strong>The Silent Patient</strong> by Alex Michaelides - A psychological thriller that will keep you guessing</li>
+              <li><strong>Gone Girl</strong> by Gillian Flynn - A masterful tale of marriage and deception</li>
+              <li><strong>The Girl with the Dragon Tattoo</strong> by Stieg Larsson - A gripping investigative thriller</li>
+              <li><strong>Sharp Objects</strong> by Gillian Flynn - Dark and atmospheric mystery</li>
+            </ul>
+            <h3 style="margin:20px 0 10px; font-size:18px">Why We Love These Books</h3>
+            <p class="p">Each of these titles offers compelling characters, intricate plots, and that perfect balance of suspense and revelation that makes mystery and thriller novels so engaging.</p>
+            <p class="p">All titles are available in our catalog. Reserve your copy today!</p>
+          `
+        },
+        '4': {
+          title: 'Digital Resources: Getting Started Guide',
+          category: 'How-To Guides',
+          date: 'February 28, 2024',
+          author: 'Digital Services',
+          content: `
+            <p class="p">New to our digital resources? This guide will help you get started accessing e-books, audiobooks, and online databases.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Step 1: Sign In</h3>
+            <p class="p">Use your patron account credentials to sign in to our digital portal. Don't have an account? <a href="membership.html" style="color:var(--brand); text-decoration:underline">Sign up for free membership</a>.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Step 2: Browse Collections</h3>
+            <p class="p">Explore our extensive digital collections including e-books, audiobooks, digital magazines, and research databases.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Step 3: Download or Stream</h3>
+            <p class="p">Most digital items can be downloaded to your device or streamed directly. Compatible with most e-readers, tablets, and smartphones.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Need Help?</h3>
+            <p class="p">Our digital services team is here to help! Contact us at helpdesk@library.local or visit the reference desk.</p>
+          `
+        },
+        '5': {
+          title: 'Book Club Highlights: February Discussion',
+          category: 'Community',
+          date: 'February 20, 2024',
+          author: 'Program Coordinator',
+          content: `
+            <p class="p">Our February book club meeting was a huge success! We discussed "The Seven Husbands of Evelyn Hugo" and had a lively conversation about character development, narrative structure, and themes.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Discussion Highlights</h3>
+            <p class="p">Members shared diverse perspectives on the book's exploration of identity, ambition, and love. The discussion was thoughtful and engaging, with participants appreciating the book's complex characters and compelling storytelling.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Next Month's Selection</h3>
+            <p class="p">For March, we'll be reading "Project Hail Mary" by Andy Weir. Join us on March 25th at 6:30 PM for our next discussion!</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Join Our Book Club</h3>
+            <p class="p">New members are always welcome! Our book club meets monthly and covers a variety of genres. <a href="events.html" style="color:var(--brand); text-decoration:underline">Check our events calendar</a> for details and registration.</p>
+          `
+        },
+        '6': {
+          title: 'Library Renovation Update',
+          category: 'News',
+          date: 'February 15, 2024',
+          author: 'Library Director',
+          content: `
+            <p class="p">We're pleased to provide an update on our ongoing library renovation project.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">Progress Update</h3>
+            <p class="p">Phase 1 of the renovation is complete, including updates to our children's section and improved accessibility features. Phase 2, focusing on our reading areas and study spaces, is scheduled to begin next month.</p>
+            <h3 style="margin:20px 0 10px; font-size:18px">What to Expect</h3>
+            <ul style="margin:0 0 20px; padding-left:20px; color:var(--muted)">
+              <li>Enhanced lighting and comfortable seating</li>
+              <li>New study rooms with modern technology</li>
+              <li>Expanded quiet reading areas</li>
+              <li>Improved Wi-Fi coverage throughout the building</li>
+            </ul>
+            <h3 style="margin:20px 0 10px; font-size:18px">Service Continuity</h3>
+            <p class="p">During the renovation, all library services remain available. Some areas may have temporary closures, but we'll keep you informed through our website and social media.</p>
+            <p class="p">Thank you for your patience as we work to improve your library experience!</p>
+          `
+        }
+      };
+      
+      if(postId && posts[postId]){
+        const post = posts[postId];
+        document.querySelector('[data-post-title]').textContent = post.title;
+        document.querySelector('[data-post-category]').textContent = post.category;
+        document.querySelector('[data-post-date]').textContent = `Published on ${post.date}`;
+        document.querySelector('[data-post-author]').textContent = `By ${post.author}`;
+        document.querySelector('[data-post-content]').innerHTML = post.content;
+        document.title = `${post.title} | City Central Public Library`;
+      }
+    })();
+  </script>
+</body>
+</html>

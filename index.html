@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>City Central Public Library</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Home">
+        <div class="brand-mark">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+            <defs>
+              <linearGradient id="bookGradBrand" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#704214;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6B7A4F;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <!-- Left page -->
+            <path d="M 15 20 L 15 80 Q 15 85 20 85 L 45 85 Q 50 85 50 80 L 50 20 Q 50 15 45 15 L 20 15 Q 15 15 15 20 Z" 
+                  fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <!-- Right page -->
+            <path d="M 50 20 L 50 80 Q 50 85 55 85 L 80 85 Q 85 85 85 80 L 85 20 Q 85 15 80 15 L 55 15 Q 50 15 50 20 Z" 
+                  fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <!-- Book spine -->
+            <path d="M 45 15 L 55 15 L 55 85 L 45 85 Z" fill="url(#bookGradBrand)"/>
+            <!-- Left page lines -->
+            <line x1="22" y1="28" x2="43" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="38" x2="43" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="48" x2="43" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="58" x2="43" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="68" x2="43" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <!-- Right page lines -->
+            <line x1="57" y1="28" x2="78" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="38" x2="78" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="48" x2="78" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="58" x2="78" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="68" x2="78" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <strong>City Central Public Library</strong>
+          <span>Digital front desk</span>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="catalog.html" data-nav="catalog">Catalog</a>
+        <a href="digital-resources.html" data-nav="digital">Digital</a>
+        <a href="events.html" data-nav="events">Events</a>
+        <a href="faq.html" data-nav="faq">FAQs</a>
+        <a href="membership.html" data-nav="membership">Membership</a>
+        <a href="contact.html" data-nav="contact">Contact</a>
+      </nav>
+
+      <div class="controls" style="display:flex; align-items:center; gap:10px">
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
+          <span data-theme-icon>🌙</span>
+        </button>
+        <div data-session-ui></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="card pad">
+          <span class="kicker">Public Library Website • Patron Account • Book Renewal</span>
+          <h1 class="h1">Search. Reserve. Renew.</h1>
+          <p class="p">
+            Welcome to the official online platform of the library. Use the catalog to find books,
+            reserve items, and manage your loans through your Patron Account.
+          </p>
+
+          <div class="controls" style="margin-top:14px">
+            <a class="btn primary" href="catalog.html">Browse Catalog</a>
+            <a class="btn" href="membership.html">Library Membership</a>
+            <a class="btn" href="patron-account.html">My Patron Account</a>
+            <button class="btn" type="button" data-reset>Reset Demo Data</button>
+          </div>
+
+          <div class="section" style="padding-top:20px; padding-bottom:0; margin-top:20px; border-top:1px solid var(--border)">
+            <div class="section-title">
+              <h2>Library info</h2>
+              <p>Timings, location, and contact</p>
+            </div>
+            <div class="grid" data-library-info style="grid-template-columns: repeat(12, 1fr)"></div>
+          </div>
+        </div>
+
+        <aside class="card pad">
+          <div class="section-title">
+            <h2>Quick actions</h2>
+            <p>Common tasks</p>
+          </div>
+
+          <div class="note">
+            Use your Patron Account to renew books online (if renewal rules allow):
+            the item is not reserved by another patron, renewal limit not exceeded,
+            and there are no heavy fines.
+          </div>
+
+          <div class="controls" style="margin-top:12px">
+            <a class="btn success" href="patron-login.html">Patron Sign in</a>
+            <a class="btn" href="patron-account.html">View Loans / Renew</a>
+            <a class="btn" href="dashboard.html">Admin Dashboard</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Featured books</h2>
+        <p>Catalog Card Pattern</p>
+      </div>
+      <div class="catalog" data-featured></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>New arrivals</h2>
+        <p>Fresh additions to the collection</p>
+      </div>
+      <div class="catalog" data-arrivals></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© <span data-year></span> City Central Public Library</div>
+      <div>
+        <a href="patron-login.html">Patron Sign in</a> •
+        <a href="membership.html">Membership</a> •
+        <a href="dashboard.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

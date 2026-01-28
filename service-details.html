@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Service Details | City Central Public Library</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="service-details">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Home">
+        <div class="brand-mark">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+            <defs>
+              <linearGradient id="bookGradServiceDetails" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#704214;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6B7A4F;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path d="M 15 20 L 15 80 Q 15 85 20 85 L 45 85 Q 50 85 50 80 L 50 20 Q 50 15 45 15 L 20 15 Q 15 15 15 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 50 20 L 50 80 Q 50 85 55 85 L 80 85 Q 85 85 85 80 L 85 20 Q 85 15 80 15 L 55 15 Q 50 15 50 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
+            <path d="M 45 15 L 55 15 L 55 85 L 45 85 Z" fill="url(#bookGradServiceDetails)"/>
+            <line x1="22" y1="28" x2="43" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="38" x2="43" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="48" x2="43" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="58" x2="43" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="22" y1="68" x2="43" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="28" x2="78" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="38" x2="78" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="48" x2="78" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="58" x2="78" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
+            <line x1="57" y1="68" x2="78" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <strong>City Central Public Library</strong>
+          <span>Service Details</span>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="catalog.html" data-nav="catalog">Catalog</a>
+        <a href="digital-resources.html" data-nav="digital">Digital</a>
+        <a href="events.html" data-nav="events">Events</a>
+        <a href="faq.html" data-nav="faq">FAQs</a>
+        <a href="membership.html" data-nav="membership">Membership</a>
+        <a href="contact.html" data-nav="contact">Contact</a>
+      </nav>
+
+      <div class="controls" style="display:flex; align-items:center; gap:10px">
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
+          <span data-theme-icon>🌙</span>
+        </button>
+        <div data-session-ui></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero">
+      <div class="card pad">
+        <span class="kicker">Service Information • Policies • Guidelines</span>
+        <h1 class="h1" data-service-title>Service Details</h1>
+        <p class="p" data-service-description>
+          Detailed information about our library services, including policies, procedures, and how to access each service.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card pad">
+        <div data-service-content>
+          <h2 style="margin:0 0 12px; font-size:20px">Select a Service</h2>
+          <p class="p">Choose a service from our <a href="services.html" style="color:var(--brand); text-decoration:underline">services page</a> to view detailed information.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Related Services</h2>
+        <p>Explore other services</p>
+      </div>
+      <div class="controls">
+        <a class="btn" href="services.html">View All Services</a>
+        <a class="btn primary" href="membership.html">Get Library Membership</a>
+        <a class="btn" href="contact.html">Contact Us</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>© <span data-year></span> City Central Public Library</div>
+      <div>
+        <a href="patron-login.html">Patron Sign in</a> •
+        <a href="membership.html">Membership</a> •
+        <a href="dashboard.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Service details handler
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const service = params.get('service');
+      
+      const services = {
+        'book-lending': {
+          title: 'Book Lending Service',
+          description: 'Borrow physical books, magazines, and other materials from our collection.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Book Lending</h2>
+            <p class="p">Our book lending service allows you to borrow physical materials from our extensive collection.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Loan Period</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>Books: 14 days (renewable up to 2 times)</li>
+              <li>Magazines: 7 days (non-renewable)</li>
+              <li>Reference materials: Library use only</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Borrowing Limits</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>Maximum 10 items per patron</li>
+              <li>Maximum 3 items per subject</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Renewal Policy</h3>
+            <p class="p">Items can be renewed online through your patron account, provided there are no holds placed by other patrons and you haven't exceeded the renewal limit.</p>
+          `
+        },
+        'digital-resources': {
+          title: 'Digital Resources',
+          description: 'Access e-books, audiobooks, and online databases 24/7.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Digital Resources</h2>
+            <p class="p">Access our extensive collection of digital materials anytime, anywhere.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Available Formats</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>E-books (EPUB, PDF)</li>
+              <li>Audiobooks (MP3)</li>
+              <li>Digital magazines</li>
+              <li>Online databases and journals</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Access</h3>
+            <p class="p">All digital resources are available 24/7 through our online portal. Simply sign in with your patron account to access.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Loan Period</h3>
+            <p class="p">Digital items are typically available for 14 days, with automatic return at the end of the loan period.</p>
+          `
+        },
+        'reference': {
+          title: 'Reference Services',
+          description: 'Get help with research, finding information, and using library resources.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Reference Services</h2>
+            <p class="p">Our reference librarians are here to help you find the information you need.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Services Offered</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>Research assistance</li>
+              <li>Database navigation help</li>
+              <li>Citation support</li>
+              <li>Information literacy training</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Contact Methods</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>In-person at the reference desk</li>
+              <li>Phone: +91 80000 12345</li>
+              <li>Email: helpdesk@library.local</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Hours</h3>
+            <p class="p">Reference assistance is available during library hours: Mon–Sat: 9:00 AM – 7:00 PM | Sun: 10:00 AM – 2:00 PM</p>
+          `
+        },
+        'interlibrary-loan': {
+          title: 'Interlibrary Loan',
+          description: 'Request books and materials from other libraries.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Interlibrary Loan</h2>
+            <p class="p">Can't find what you're looking for? We can request it from another library.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Eligible Items</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>Books published more than 6 months ago</li>
+              <li>Journal articles (photocopies)</li>
+              <li>Some reference materials</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Processing Time</h3>
+            <p class="p">Most requests are processed within 3-5 business days. You'll be notified when your item arrives.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Cost</h3>
+            <p class="p">Interlibrary loan is free for all library members. Some rare or special materials may have restrictions.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">How to Request</h3>
+            <p class="p">Contact our reference desk in person, by phone, or email with the item details (title, author, ISBN if available).</p>
+          `
+        },
+        'computer-access': {
+          title: 'Computer & Internet Access',
+          description: 'Free computer and Wi-Fi access at the library.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Computer & Internet Access</h2>
+            <p class="p">Free access to computers and high-speed internet for all library members.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Computer Access</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>2-hour sessions per day (extensions available if no waitlist)</li>
+              <li>Microsoft Office suite installed</li>
+              <li>Printing available (₹2 per page)</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Wi-Fi Access</h3>
+            <p class="p">Free Wi-Fi is available throughout the library. No password required. Connect to "Library-Public" network.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Reservations</h3>
+            <p class="p">Computer stations can be reserved in advance. Walk-ins are welcome subject to availability.</p>
+          `
+        },
+        'programs': {
+          title: 'Programs & Events',
+          description: 'Join our workshops, book clubs, and community events.',
+          content: `
+            <h2 style="margin:0 0 12px; font-size:20px">Programs & Events</h2>
+            <p class="p">We offer a variety of programs and events for all ages throughout the year.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Regular Programs</h3>
+            <ul style="margin:0; padding-left:20px; color:var(--muted)">
+              <li>Book clubs (various genres)</li>
+              <li>Children's storytime</li>
+              <li>Writing workshops</li>
+              <li>Computer literacy classes</li>
+              <li>Author talks and readings</li>
+            </ul>
+            <h3 style="margin:16px 0 8px; font-size:16px">Registration</h3>
+            <p class="p">Some programs require advance registration. Check our events calendar for details and registration links.</p>
+            <h3 style="margin:16px 0 8px; font-size:16px">Cost</h3>
+            <p class="p">All library programs are free and open to the public. Library membership is encouraged but not always required.</p>
+          `
+        }
+      };
+      
+      if(service && services[service]){
+        const serviceData = services[service];
+        document.querySelector('[data-service-title]').textContent = serviceData.title;
+        document.querySelector('[data-service-description]').textContent = serviceData.description;
+        document.querySelector('[data-service-content]').innerHTML = serviceData.content;
+      }
+    })();
+  </script>
+</body>
+</html>
