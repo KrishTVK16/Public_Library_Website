@@ -1,116 +1,139 @@
-(function(){
+(function () {
   const STORAGE_KEY = 'plw_data_v1';
 
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  function todayISO(){
+  function todayISO() {
     const d = new Date();
-    d.setHours(0,0,0,0);
-    return d.toISOString().slice(0,10);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().slice(0, 10);
   }
 
-  function addDaysISO(iso, days){
+  function addDaysISO(iso, days) {
     const d = new Date(iso + 'T00:00:00');
     d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0,10);
+    return d.toISOString().slice(0, 10);
   }
 
-  function fmtDate(iso){
-    if(!iso) return '—';
+  function fmtDate(iso) {
+    if (!iso) return '—';
     const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString(undefined, {year:'numeric', month:'short', day:'2-digit'});
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' });
   }
 
-  function uid(prefix){
+  function uid(prefix) {
     return prefix + '_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
   }
 
-  function loadData(){
-    try{
+  function loadData() {
+    try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw){
+      if (raw) {
         const parsed = JSON.parse(raw);
-        if(parsed && typeof parsed === 'object') return parsed;
+        if (parsed && typeof parsed === 'object') return parsed;
       }
-    }catch(e){
+    } catch (e) {
       // ignore
     }
     return null;
   }
 
-  function saveData(data){
+  function saveData(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  function seedDataIfMissing(){
+  function migrateImageData(data) {
+    if (!data || !data.books) return data;
+    const mapping = {
+      'The Great Gatsby': 'images/TheGreatGatsby.jpg',
+      'Atomic Habits': 'images/AtomicHabits.jfif',
+      'A Brief History of Time': 'images/ABriefHistoryofTime.jfif',
+      'Pride and Prejudice': 'images/prideandpredjuce.jpg',
+      'The Alchemist': 'images/TheAlchemist.jfif',
+      'The Hobbit': 'images/thehobbit.jfif',
+      'Digital Minimalism': 'images/DigitalMinimalism.png',
+      'The Very Hungry Caterpillar': 'images/TheVeryHungryCaterpillar.jfif'
+    };
+    let changed = false;
+    data.books.forEach(b => {
+      if (mapping[b.title] && b.cover.startsWith('https://images.unsplash.com')) {
+        b.cover = mapping[b.title];
+        changed = true;
+      }
+    });
+    if (changed) saveData(data);
+    return data;
+  }
+
+  function seedDataIfMissing() {
     let data = loadData();
-    if(data) return data;
+    if (data) return data;
 
     const seedBooks = [
-      {id:'b_1001', title:'The Great Gatsby', author:'F. Scott Fitzgerald', subject:'Classic', isbn:'9780743273565', format:'Print', location:'Adult Fiction', available:true, featured:true, newArrival:false, cover:'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop'},
-      {id:'b_1002', title:'Atomic Habits', author:'James Clear', subject:'Self-Help', isbn:'9780735211292', format:'Print', location:'Non-Fiction', available:true, featured:true, newArrival:true, cover:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop'},
-      {id:'b_1003', title:'A Brief History of Time', author:'Stephen Hawking', subject:'Science', isbn:'9780553380163', format:'Print', location:'Science', available:false, featured:false, newArrival:false, cover:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=600&fit=crop'},
-      {id:'b_1004', title:'Pride and Prejudice', author:'Jane Austen', subject:'Classic', isbn:'9781503290563', format:'E-Book', location:'Digital', available:true, featured:false, newArrival:true, cover:'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop'},
-      {id:'b_1005', title:'The Alchemist', author:'Paulo Coelho', subject:'Fiction', isbn:'9780061122415', format:'Print', location:'Adult Fiction', available:true, featured:false, newArrival:false, cover:'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop'},
-      {id:'b_1006', title:'The Hobbit', author:'J.R.R. Tolkien', subject:'Fantasy', isbn:'9780345339683', format:'Print', location:'Teen/YA', available:true, featured:true, newArrival:false, cover:'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop'},
-      {id:'b_1007', title:'Digital Minimalism', author:'Cal Newport', subject:'Technology', isbn:'9780525536512', format:'E-Book', location:'Digital', available:true, featured:false, newArrival:false, cover:'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop'},
-      {id:'b_1008', title:'The Very Hungry Caterpillar', author:'Eric Carle', subject:'Children', isbn:'9780399226908', format:'Print', location:'Children', available:true, featured:false, newArrival:true, cover:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop'}
+      { id: 'b_1001', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', subject: 'Classic', isbn: '9780743273565', format: 'Print', location: 'Adult Fiction', available: true, featured: true, newArrival: false, cover: 'images/TheGreatGatsby.jpg' },
+      { id: 'b_1002', title: 'Atomic Habits', author: 'James Clear', subject: 'Self-Help', isbn: '9780735211292', format: 'Print', location: 'Non-Fiction', available: true, featured: true, newArrival: true, cover: 'images/AtomicHabits.jfif' },
+      { id: 'b_1003', title: 'A Brief History of Time', author: 'Stephen Hawking', subject: 'Science', isbn: '9780553380163', format: 'Print', location: 'Science', available: false, featured: false, newArrival: false, cover: 'images/ABriefHistoryofTime.jfif' },
+      { id: 'b_1004', title: 'Pride and Prejudice', author: 'Jane Austen', subject: 'Classic', isbn: '9781503290563', format: 'E-Book', location: 'Digital', available: true, featured: false, newArrival: true, cover: 'images/prideandpredjuce.jpg' },
+      { id: 'b_1005', title: 'The Alchemist', author: 'Paulo Coelho', subject: 'Fiction', isbn: '9780061122415', format: 'Print', location: 'Adult Fiction', available: true, featured: false, newArrival: false, cover: 'images/TheAlchemist.jfif' },
+      { id: 'b_1006', title: 'The Hobbit', author: 'J.R.R. Tolkien', subject: 'Fantasy', isbn: '9780345339683', format: 'Print', location: 'Teen/YA', available: true, featured: true, newArrival: false, cover: 'images/thehobbit.jfif' },
+      { id: 'b_1007', title: 'Digital Minimalism', author: 'Cal Newport', subject: 'Technology', isbn: '9780525536512', format: 'E-Book', location: 'Digital', available: true, featured: false, newArrival: false, cover: 'images/DigitalMinimalism.png' },
+      { id: 'b_1008', title: 'The Very Hungry Caterpillar', author: 'Eric Carle', subject: 'Children', isbn: '9780399226908', format: 'Print', location: 'Children', available: true, featured: false, newArrival: true, cover: 'images/TheVeryHungryCaterpillar.jfif' }
     ];
 
     const seedPatrons = [
-      {id:'p_2001', name:'Aarav Sharma', email:'aarav@demo.local', phone:'+91 90000 00000', fines:0, maxRenewalsPerLoan:2, heavyFineThreshold:200},
-      {id:'p_2002', name:'Meera Iyer', email:'meera@demo.local', phone:'+91 98888 11111', fines:25, maxRenewalsPerLoan:2, heavyFineThreshold:200}
+      { id: 'p_2001', name: 'Aarav Sharma', email: 'aarav@demo.local', phone: '+91 90000 00000', fines: 0, maxRenewalsPerLoan: 2, heavyFineThreshold: 200 },
+      { id: 'p_2002', name: 'Meera Iyer', email: 'meera@demo.local', phone: '+91 98888 11111', fines: 25, maxRenewalsPerLoan: 2, heavyFineThreshold: 200 }
     ];
 
     const seedLoans = [
       {
-        id:'l_3001',
-        patronId:'p_2001',
-        bookId:'b_1003',
-        borrowedOn:addDaysISO(todayISO(), -7),
-        dueOn:addDaysISO(todayISO(), 7),
-        renewalsUsed:0,
-        maxRenewals:2,
-        holdByOther:false
+        id: 'l_3001',
+        patronId: 'p_2001',
+        bookId: 'b_1003',
+        borrowedOn: addDaysISO(todayISO(), -7),
+        dueOn: addDaysISO(todayISO(), 7),
+        renewalsUsed: 0,
+        maxRenewals: 2,
+        holdByOther: false
       },
       {
-        id:'l_3002',
-        patronId:'p_2001',
-        bookId:'b_1001',
-        borrowedOn:addDaysISO(todayISO(), -20),
-        dueOn:addDaysISO(todayISO(), 1),
-        renewalsUsed:1,
-        maxRenewals:2,
-        holdByOther:true
+        id: 'l_3002',
+        patronId: 'p_2001',
+        bookId: 'b_1001',
+        borrowedOn: addDaysISO(todayISO(), -20),
+        dueOn: addDaysISO(todayISO(), 1),
+        renewalsUsed: 1,
+        maxRenewals: 2,
+        holdByOther: true
       }
     ];
 
     const seedEvents = [
-      {id:'e_4001', title:'Story Time (Kids)', schedule:'Every Saturday', time:'11:00 AM – 12:00 PM', location:'Children\'s Corner', description:'Includes read-aloud sessions and fun activities.'},
-      {id:'e_4002', title:'Career & Resume Clinic', schedule:'2nd Wednesday', time:'4:00 PM – 6:00 PM', location:'Community Hall', description:'Bring your resume and get one-on-one guidance.'},
-      {id:'e_4003', title:'Digital Literacy Workshop', schedule:'Monthly', time:'TBA', location:'Computer Lab', description:'Topics: Online safety, email basics, and e-resources. Registration: Required at the help desk.'},
-      {id:'e_4004', title:'Book Club Meetup', schedule:'Every Friday', time:'5:30 PM – 6:30 PM', location:'Reading Room', description:'Theme rotates weekly. Check announcements on the notice board.'}
+      { id: 'e_4001', title: 'Story Time (Kids)', schedule: 'Every Saturday', time: '11:00 AM – 12:00 PM', location: 'Children\'s Corner', description: 'Includes read-aloud sessions and fun activities.' },
+      { id: 'e_4002', title: 'Career & Resume Clinic', schedule: '2nd Wednesday', time: '4:00 PM – 6:00 PM', location: 'Community Hall', description: 'Bring your resume and get one-on-one guidance.' },
+      { id: 'e_4003', title: 'Digital Literacy Workshop', schedule: 'Monthly', time: 'TBA', location: 'Computer Lab', description: 'Topics: Online safety, email basics, and e-resources. Registration: Required at the help desk.' },
+      { id: 'e_4004', title: 'Book Club Meetup', schedule: 'Every Friday', time: '5:30 PM – 6:30 PM', location: 'Reading Room', description: 'Theme rotates weekly. Check announcements on the notice board.' }
     ];
 
     const dataSeed = {
-      version:1,
-      library:{
-        name:'City Central Public Library',
-        address:'12 Knowledge Avenue, Civic Center',
-        city:'Your City',
-        phone:'+91 80000 12345',
-        email:'helpdesk@library.local',
-        timings:'Mon–Sat: 9:00 AM – 7:00 PM | Sun: 10:00 AM – 2:00 PM'
+      version: 1,
+      library: {
+        name: 'City Central Public Library',
+        address: '12 Knowledge Avenue, Civic Center',
+        city: 'Your City',
+        phone: '+91 80000 12345',
+        email: 'helpdesk@library.local',
+        timings: 'Mon–Sat: 9:00 AM – 7:00 PM | Sun: 10:00 AM – 2:00 PM'
       },
       books: seedBooks,
       patrons: seedPatrons,
       loans: seedLoans,
       holds: [],
       events: seedEvents,
-      session:{
-        patronId:null,
-        isAdmin:false
+      session: {
+        patronId: null,
+        isAdmin: false
       }
     };
 
@@ -118,22 +141,23 @@
     return dataSeed;
   }
 
-  function getData(){
-    const data = seedDataIfMissing();
+  function getData() {
+    let data = seedDataIfMissing();
+    data = migrateImageData(data);
     // Ensure events array exists for backward compatibility
-    if(!data.events) data.events = [];
+    if (!data.events) data.events = [];
     return data;
   }
 
-  function setSession(updates){
+  function setSession(updates) {
     const data = getData();
-    data.session = {...data.session, ...updates};
+    data.session = { ...data.session, ...updates };
     saveData(data);
   }
 
-  function toast(title, message){
+  function toast(title, message) {
     let wrap = $('.toast-wrap');
-    if(!wrap){
+    if (!wrap) {
       wrap = document.createElement('div');
       wrap.className = 'toast-wrap';
       document.body.appendChild(wrap);
@@ -150,44 +174,44 @@
     `;
     wrap.appendChild(el);
 
-    const t = setTimeout(()=>{ el.remove(); }, 4800);
-    $('.x', el).addEventListener('click', ()=>{ clearTimeout(t); el.remove(); });
+    const t = setTimeout(() => { el.remove(); }, 4800);
+    $('.x', el).addEventListener('click', () => { clearTimeout(t); el.remove(); });
   }
 
-  function escapeHtml(s){
+  function escapeHtml(s) {
     return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#39;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
   }
 
-  function setActiveNav(){
+  function setActiveNav() {
     const page = document.body.getAttribute('data-page');
-    if(!page) return;
-    $$('.nav a').forEach(a=>{
-      if(a.getAttribute('data-nav') === page) a.classList.add('active');
+    if (!page) return;
+    $$('.nav a').forEach(a => {
+      if (a.getAttribute('data-nav') === page) a.classList.add('active');
     });
   }
 
-  function patron(){
+  function patron() {
     const data = getData();
-    if(!data.session.patronId) return null;
-    return data.patrons.find(p=>p.id === data.session.patronId) || null;
+    if (!data.session.patronId) return null;
+    return data.patrons.find(p => p.id === data.session.patronId) || null;
   }
 
-  function requirePatronOrRedirect(){
+  function requirePatronOrRedirect() {
     const p = patron();
-    if(p) return p;
+    if (p) return p;
     toast('Sign in required', 'Please sign in to access your Patron Account.');
-    setTimeout(()=>{ window.location.href = 'patron-login.html'; }, 350);
+    setTimeout(() => { window.location.href = 'patron-login.html'; }, 350);
     return null;
   }
 
-  function renderCatalog(list, mount, isAdmin = false){
-    if(!mount) return;
-    if(!list.length){
+  function renderCatalog(list, mount, isAdmin = false) {
+    if (!mount) return;
+    if (!list.length) {
       mount.innerHTML = '<div class="note">No matching books found. Try a different search.</div>';
       return;
     }
@@ -195,7 +219,7 @@
     const data = getData();
     const p = patron();
 
-    mount.innerHTML = list.map(b=>{
+    mount.innerHTML = list.map(b => {
       const availability = b.available ? '<span class="badge good">Available</span>' : '<span class="badge bad">Checked out</span>';
       const featured = b.featured ? '<span class="badge">Featured</span>' : '';
       const newArrival = b.newArrival ? '<span class="badge warn">New</span>' : '';
@@ -209,7 +233,7 @@
       const actionPrimary = isAdmin ? '' : (p ? reserveBtn : signInBtn);
 
       const coverImage = b.cover ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">` : `<div class="book-cover-placeholder">${escapeHtml(b.title)}</div>`;
-      
+
       return `
         <article class="book-card" data-book-card="${b.id}">
           <div class="book-cover">
@@ -247,38 +271,38 @@
       `;
     }).join('');
 
-    mount.addEventListener('click', (e)=>{
+    mount.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
-      if(!btn) return;
+      if (!btn) return;
       const action = btn.getAttribute('data-action');
       const bookId = btn.getAttribute('data-book');
-      if(action === 'reserve'){
+      if (action === 'reserve') {
         const pNow = patron();
-        if(!pNow){
+        if (!pNow) {
           toast('Sign in required', 'Please sign in to reserve books.');
           return;
         }
         reserveBook(bookId, pNow.id);
       }
-      if(action === 'hold'){
+      if (action === 'hold') {
         const pNow = patron();
-        if(!pNow){
+        if (!pNow) {
           toast('Sign in required', 'Please sign in to place a hold.');
           return;
         }
         placeHold(bookId, pNow.id);
       }
-    }, {once:true});
+    }, { once: true });
   }
 
-  function reserveBook(bookId, patronId){
+  function reserveBook(bookId, patronId) {
     const data = getData();
-    const b = data.books.find(x=>x.id === bookId);
-    if(!b){
+    const b = data.books.find(x => x.id === bookId);
+    if (!b) {
       toast('Not found', 'That book could not be found.');
       return;
     }
-    if(!b.available){
+    if (!b.available) {
       toast('Not available', 'This book is currently checked out. Try placing a hold.');
       return;
     }
@@ -301,105 +325,108 @@
     toast('Reserved', `“${b.title}” has been reserved and loaned to your account.`);
   }
 
-  function placeHold(bookId, patronId){
+  function placeHold(bookId, patronId) {
     const data = getData();
-    const b = data.books.find(x=>x.id === bookId);
-    if(!b){
+    const b = data.books.find(x => x.id === bookId);
+    if (!b) {
       toast('Not found', 'That book could not be found.');
       return;
     }
 
-    const existing = data.holds.find(h=>h.bookId===bookId && h.patronId===patronId);
-    if(existing){
+    const existing = data.holds.find(h => h.bookId === bookId && h.patronId === patronId);
+    if (existing) {
       toast('Already on hold', 'You already placed a hold for this title.');
       return;
     }
 
-    data.holds.push({id: uid('h'), patronId, bookId, placedOn: todayISO()});
+    data.holds.push({ id: uid('h'), patronId, bookId, placedOn: todayISO() });
     saveData(data);
 
     toast('Hold placed', `You are in the hold queue for “${b.title}”.`);
   }
 
-  function signOut(){
-    setSession({patronId:null, isAdmin:false});
+  function signOut() {
+    setSession({ patronId: null, isAdmin: false });
     toast('Signed out', 'You have been signed out.');
-    setTimeout(()=>{ window.location.href = 'index.html'; }, 250);
+    setTimeout(() => { window.location.href = 'index.html'; }, 250);
   }
 
-  function initHeaderSessionUI(){
+  function initHeaderSessionUI() {
     const data = getData();
     const p = patron();
-    const mount = $('[data-session-ui]');
-    if(!mount) return;
+    const mounts = $$('[data-session-ui], [data-mobile-session-ui]');
+    if (!mounts.length) return;
+
+    const nav = $('.nav');
+    const currentPage = document.body.getAttribute('data-page');
+    const isOnAccount = currentPage === 'patron-account';
 
     // Simplify navigation when patron is signed in
-    const nav = $('.nav');
-    if(nav && p){
-      const currentPage = document.body.getAttribute('data-page');
-      // Keep only Home and Catalog links
-      const allNavLinks = nav.querySelectorAll('a');
-      allNavLinks.forEach(link => {
-        const href = link.getAttribute('href');
+    if (nav && p) {
+      $$('a', nav).forEach(link => {
         const navAttr = link.getAttribute('data-nav');
-        // Hide links that are not Home or Catalog
-        if(navAttr !== 'home' && navAttr !== 'catalog' && href !== 'index.html' && href !== 'catalog.html'){
+        if (navAttr && navAttr !== 'home' && navAttr !== 'catalog' && !link.href.includes('index.html') && !link.href.includes('catalog.html')) {
           link.style.display = 'none';
         }
       });
     }
 
-    if(p){
-      const currentPage = document.body.getAttribute('data-page');
-      const isOnPatronAccount = currentPage === 'patron-account';
-      
-      // Don't show "Patron Account" button if already on that page
-      const accountButton = isOnPatronAccount ? '' : `<a class="btn" href="patron-account.html">Patron Account</a>`;
-      
-      mount.innerHTML = `
-        <span class="badge">Signed in as <b style="color:var(--text)">${escapeHtml(p.name)}</b></span>
-        ${accountButton}
+    const html = p ? `
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%">
+        <span class="badge" style="justify-content:center; padding:10px">Signed in as <b style="color:var(--text)">${escapeHtml(p.name)}</b></span>
+        ${isOnAccount ? '' : `<a class="btn" href="patron-account.html">Patron Account</a>`}
         <button class="btn danger" type="button" data-signout>Sign out</button>
-      `;
-      $('[data-signout]', mount).addEventListener('click', signOut);
-      return;
-    }
-
-    // Restore all navigation links when not signed in
-    if(nav){
-      const allNavLinks = nav.querySelectorAll('a');
-      allNavLinks.forEach(link => {
-        link.style.display = '';
-      });
-    }
-
-    mount.innerHTML = `
+      </div>
+    ` : `
       <a class="btn primary" href="patron-login.html">Patron Sign in</a>
       <a class="btn" href="membership.html">Get a Library Card</a>
     `;
+
+    mounts.forEach(m => {
+      const isMobile = m.hasAttribute('data-mobile-session-ui');
+      if (isMobile) {
+        m.innerHTML = html;
+      } else {
+        // Main header UI
+        if (p) {
+          const accountBtn = isOnAccount ? '' : `<a class="btn" href="patron-account.html">Patron Account</a>`;
+          m.innerHTML = `
+            <span class="badge">Signed in as <b style="color:var(--text)">${escapeHtml(p.name)}</b></span>
+            ${accountBtn}
+            <button class="btn danger" type="button" data-signout>Sign out</button>
+          `;
+        } else {
+          m.innerHTML = `
+            <a class="btn primary" href="patron-login.html">Patron Sign in</a>
+            <a class="btn" href="membership.html">Get a Library Card</a>
+          `;
+        }
+      }
+      $$('[data-signout]', m).forEach(btn => btn.addEventListener('click', signOut));
+    });
   }
 
-  function initHome(){
+  function initHome() {
     const data = getData();
 
-    const featured = data.books.filter(b=>b.featured).slice(0,6);
-    const arrivals = data.books.filter(b=>b.newArrival).slice(0,6);
+    const featured = data.books.filter(b => b.featured).slice(0, 6);
+    const arrivals = data.books.filter(b => b.newArrival).slice(0, 6);
 
     renderCatalog(featured, $('[data-featured]'));
     renderCatalog(arrivals, $('[data-arrivals]'));
 
     const lib = data.library;
     const info = $('[data-library-info]');
-    if(info){
+    if (info) {
       info.innerHTML = `
-        <div class="meta"><b>Timings</b><span>${escapeHtml(lib.timings)}</span></div>
-        <div class="meta"><b>Address</b><span>${escapeHtml(lib.address)}, ${escapeHtml(lib.city)}</span></div>
-        <div class="meta"><b>Contact</b><span>${escapeHtml(lib.phone)} • ${escapeHtml(lib.email)}</span></div>
+        <div class="col-4"><div class="meta"><b>Timings</b><span>${escapeHtml(lib.timings)}</span></div></div>
+        <div class="col-4"><div class="meta"><b>Address</b><span>${escapeHtml(lib.address)}, ${escapeHtml(lib.city)}</span></div></div>
+        <div class="col-4"><div class="meta"><b>Contact</b><span>${escapeHtml(lib.phone)} • ${escapeHtml(lib.email)}</span></div></div>
       `;
     }
   }
 
-  function initCatalogPage(){
+  function initCatalogPage() {
     const data = getData();
     const isAdmin = data.session.isAdmin;
 
@@ -412,40 +439,40 @@
     const adminSection = $('[data-admin-section]');
     const adminAddBtn = $('[data-admin-add-book]');
     const patronLink = $('[data-patron-link]');
-    
-    if(isAdmin){
-      if(adminSection) adminSection.style.display = 'block';
-      if(adminAddBtn) adminAddBtn.style.display = 'inline-flex';
-      if(patronLink) patronLink.style.display = 'none';
+
+    if (isAdmin) {
+      if (adminSection) adminSection.style.display = 'block';
+      if (adminAddBtn) adminAddBtn.style.display = 'inline-flex';
+      if (patronLink) patronLink.style.display = 'none';
     } else {
-      if(adminSection) adminSection.style.display = 'none';
-      if(adminAddBtn) adminAddBtn.style.display = 'none';
-      if(patronLink) patronLink.style.display = 'inline-flex';
+      if (adminSection) adminSection.style.display = 'none';
+      if (adminAddBtn) adminAddBtn.style.display = 'none';
+      if (patronLink) patronLink.style.display = 'inline-flex';
     }
 
-    if(subject){
-      const subjects = Array.from(new Set(data.books.map(b=>b.subject))).sort();
-      subject.innerHTML = `<option value="">All subjects</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    if (subject) {
+      const subjects = Array.from(new Set(data.books.map(b => b.subject))).sort();
+      subject.innerHTML = `<option value="">All subjects</option>` + subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
     }
 
-    function filter(){
+    function filter() {
       const q = (search?.value || '').trim().toLowerCase();
       const sub = subject?.value || '';
       const av = availability?.value || '';
 
-      const list = data.books.filter(b=>{
-        const matchQ = !q || [b.title,b.author,b.subject,b.isbn,b.id].some(x=>String(x).toLowerCase().includes(q));
+      const list = data.books.filter(b => {
+        const matchQ = !q || [b.title, b.author, b.subject, b.isbn, b.id].some(x => String(x).toLowerCase().includes(q));
         const matchSub = !sub || b.subject === sub;
-        const matchAv = !av || (av==='available' ? b.available : !b.available);
+        const matchAv = !av || (av === 'available' ? b.available : !b.available);
         return matchQ && matchSub && matchAv;
       });
 
       renderCatalog(list, mount, isAdmin);
       const count = $('[data-result-count]');
-      if(count) count.textContent = `${list.length} result(s)`;
+      if (count) count.textContent = `${list.length} result(s)`;
     }
 
-    ['input','change'].forEach(evt=>{
+    ['input', 'change'].forEach(evt => {
       search?.addEventListener(evt, filter);
       subject?.addEventListener(evt, filter);
       availability?.addEventListener(evt, filter);
@@ -455,8 +482,8 @@
 
     // Admin: Add book
     const addForm = $('[data-add-book-form]');
-    if(addForm && isAdmin){
-      addForm.addEventListener('submit', (e)=>{
+    if (addForm && isAdmin) {
+      addForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const dataNow = getData();
         const title = ($('[name=title]', addForm)?.value || '').trim();
@@ -466,8 +493,8 @@
         const format = ($('[name=format]', addForm)?.value || '').trim();
         const location = ($('[name=location]', addForm)?.value || '').trim();
         const cover = ($('[name=cover]', addForm)?.value || '').trim();
-        
-        if(!title || !author){
+
+        if (!title || !author) {
           toast('Missing details', 'Please provide at least title and author.');
           return;
         }
@@ -488,38 +515,38 @@
         saveData(dataNow);
         toast('Added', 'New book added to catalog.');
         addForm.reset();
-        if(adminSection) adminSection.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
         filter();
       });
     }
 
     // Admin: Toggle add form
-    adminAddBtn?.addEventListener('click', ()=>{
-      if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
-      if(adminSection && adminSection.style.display === 'block'){
-        adminSection.scrollIntoView({behavior:'smooth', block:'start'});
+    adminAddBtn?.addEventListener('click', () => {
+      if (adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+      if (adminSection && adminSection.style.display === 'block') {
+        adminSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
 
-    $('[data-cancel-add-book]')?.addEventListener('click', ()=>{
-      if(adminSection) adminSection.style.display = 'none';
-      if(addForm) addForm.reset();
+    $('[data-cancel-add-book]')?.addEventListener('click', () => {
+      if (adminSection) adminSection.style.display = 'none';
+      if (addForm) addForm.reset();
     });
 
     // Admin: Delete book and toggle availability
-    if(isAdmin){
-      mount?.addEventListener('click', (e)=>{
+    if (isAdmin) {
+      mount?.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('[data-delete-book]');
-        if(deleteBtn){
+        if (deleteBtn) {
           const bookId = deleteBtn.getAttribute('data-delete-book');
-          const book = data.books.find(x=>x.id===bookId);
-          if(!book) return;
-          
-          if(confirm(`Delete book "${book.title}" from catalog?`)){
+          const book = data.books.find(x => x.id === bookId);
+          if (!book) return;
+
+          if (confirm(`Delete book "${book.title}" from catalog?`)) {
             const dataNow = getData();
-            dataNow.books = dataNow.books.filter(x=>x.id!==bookId);
-            dataNow.loans = dataNow.loans.filter(l=>l.bookId!==bookId);
-            dataNow.holds = dataNow.holds.filter(h=>h.bookId!==bookId);
+            dataNow.books = dataNow.books.filter(x => x.id !== bookId);
+            dataNow.loans = dataNow.loans.filter(l => l.bookId !== bookId);
+            dataNow.holds = dataNow.holds.filter(h => h.bookId !== bookId);
             saveData(dataNow);
             toast('Deleted', `Book "${book.title}" has been removed.`);
             filter();
@@ -528,11 +555,11 @@
         }
 
         const toggleBtn = e.target.closest('[data-toggle-avail]');
-        if(toggleBtn){
+        if (toggleBtn) {
           const bookId = toggleBtn.getAttribute('data-toggle-avail');
           const dataNow = getData();
-          const book = dataNow.books.find(x=>x.id===bookId);
-          if(book){
+          const book = dataNow.books.find(x => x.id === bookId);
+          if (book) {
             book.available = !book.available;
             saveData(dataNow);
             toast('Updated', `Availability updated for "${book.title}".`);
@@ -542,95 +569,95 @@
       });
     }
 
-    if(window.location.hash){
+    if (window.location.hash) {
       const id = decodeURIComponent(window.location.hash.slice(1));
-      setTimeout(()=>{
+      setTimeout(() => {
         const el = document.querySelector(`[data-book-card="${CSS.escape(id)}"]`);
-        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
     }
   }
 
-  function initPatronLogin(){
+  function initPatronLogin() {
     const data = getData();
 
     const form = $('[data-login-form]');
     const email = $('[name=email]');
 
     const quick = $('[data-quick-login]');
-    if(quick){
-      quick.innerHTML = data.patrons.map(p=>{
+    if (quick) {
+      quick.innerHTML = data.patrons.map(p => {
         return `<button type="button" class="btn" data-login="${p.id}">${escapeHtml(p.name)}</button>`;
       }).join('');
 
-      quick.addEventListener('click', (e)=>{
+      quick.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-login]');
-        if(!btn) return;
+        if (!btn) return;
         const pid = btn.getAttribute('data-login');
-        const p = data.patrons.find(x=>x.id===pid);
-        if(!p) return;
-        setSession({patronId:p.id, isAdmin:false});
+        const p = data.patrons.find(x => x.id === pid);
+        if (!p) return;
+        setSession({ patronId: p.id, isAdmin: false });
         toast('Welcome', `Signed in as ${p.name}.`);
-        setTimeout(()=>{ window.location.href = 'patron-account.html'; }, 250);
+        setTimeout(() => { window.location.href = 'patron-account.html'; }, 250);
       });
     }
 
-    form?.addEventListener('submit', (e)=>{
+    form?.addEventListener('submit', (e) => {
       e.preventDefault();
       const value = (email?.value || '').trim().toLowerCase();
-      const p = data.patrons.find(x=>x.email.toLowerCase() === value);
-      if(!p){
+      const p = data.patrons.find(x => x.email.toLowerCase() === value);
+      if (!p) {
         toast('Sign-in failed', 'No patron account found for that email. Use quick sign-in for the demo.');
         return;
       }
-      setSession({patronId:p.id, isAdmin:false});
+      setSession({ patronId: p.id, isAdmin: false });
       toast('Welcome', `Signed in as ${p.name}.`);
-      setTimeout(()=>{ window.location.href = 'patron-account.html'; }, 250);
+      setTimeout(() => { window.location.href = 'patron-account.html'; }, 250);
     });
 
     const adminForm = $('[data-admin-form]');
-    adminForm?.addEventListener('submit', (e)=>{
+    adminForm?.addEventListener('submit', (e) => {
       e.preventDefault();
       const pin = ($('[name=adminPin]')?.value || '').trim();
-      if(pin !== '1234'){
+      if (pin !== '1234') {
         toast('Access denied', 'Invalid admin PIN. (Demo PIN: 1234)');
         return;
       }
-      setSession({isAdmin:true, patronId:null});
+      setSession({ isAdmin: true, patronId: null });
       toast('Admin access', 'Opening dashboard...');
-      setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 250);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 250);
     });
   }
 
-  function renewalEligibility(data, loan, patronObj){
-    const book = data.books.find(b=>b.id===loan.bookId);
-    if(!book) return {ok:false, reason:'Book not found.'};
+  function renewalEligibility(data, loan, patronObj) {
+    const book = data.books.find(b => b.id === loan.bookId);
+    if (!book) return { ok: false, reason: 'Book not found.' };
 
-    if(loan.holdByOther) return {ok:false, reason:'This title is reserved by another patron.'};
-    if(loan.renewalsUsed >= loan.maxRenewals) return {ok:false, reason:'Maximum renewal limit reached.'};
+    if (loan.holdByOther) return { ok: false, reason: 'This title is reserved by another patron.' };
+    if (loan.renewalsUsed >= loan.maxRenewals) return { ok: false, reason: 'Maximum renewal limit reached.' };
 
     const fines = Number(patronObj.fines || 0);
-    if(fines >= patronObj.heavyFineThreshold) return {ok:false, reason:'Account has heavy fines. Please contact the help desk.'};
+    if (fines >= patronObj.heavyFineThreshold) return { ok: false, reason: 'Account has heavy fines. Please contact the help desk.' };
 
-    return {ok:true, reason:'Eligible for renewal.'};
+    return { ok: true, reason: 'Eligible for renewal.' };
   }
 
-  function renewLoan(loanId){
+  function renewLoan(loanId) {
     const data = getData();
     const p = patron();
-    if(!p){
+    if (!p) {
       toast('Sign in required', 'Please sign in to renew items.');
       return;
     }
 
-    const loan = data.loans.find(l=>l.id===loanId && l.patronId===p.id);
-    if(!loan){
+    const loan = data.loans.find(l => l.id === loanId && l.patronId === p.id);
+    if (!loan) {
       toast('Not found', 'That loan could not be found.');
       return;
     }
 
     const check = renewalEligibility(data, loan, p);
-    if(!check.ok){
+    if (!check.ok) {
       toast('Renewal blocked', check.reason);
       return;
     }
@@ -642,25 +669,25 @@
     toast('Renewed', `New due date: ${fmtDate(loan.dueOn)}.`);
   }
 
-  function initPatronAccount(){
+  function initPatronAccount() {
     const p = requirePatronOrRedirect();
-    if(!p) return;
+    if (!p) return;
 
     const data = getData();
     const name = $('[data-patron-name]');
-    if(name) name.textContent = p.name;
+    if (name) name.textContent = p.name;
 
     // Calculate statistics
-    const allLoans = data.loans.filter(l=>l.patronId===p.id);
-    const activeLoans = allLoans.filter(l=>!l.returnedOn);
-    const returnedLoans = allLoans.filter(l=>l.returnedOn);
+    const allLoans = data.loans.filter(l => l.patronId === p.id);
+    const activeLoans = allLoans.filter(l => !l.returnedOn);
+    const returnedLoans = allLoans.filter(l => l.returnedOn);
     const totalBorrowed = allLoans.length;
     const membershipDate = p.membershipDate || p.id; // Use ID as fallback for membership date
     const daysSinceMembership = Math.floor((Date.now() - new Date(membershipDate).getTime()) / (1000 * 60 * 60 * 24));
     const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
 
     const summary = $('[data-patron-summary]');
-    if(summary){
+    if (summary) {
       summary.innerHTML = `
         <div class="col-3">
           <div class="meta">
@@ -677,7 +704,7 @@
         <div class="col-3">
           <div class="meta">
             <b>💰 Fines</b>
-            <span style="color:${(p.fines||0) > 0 ? 'var(--danger)' : 'var(--brand2)'}">$${Number(p.fines||0).toFixed(2)}</span>
+            <span style="color:${(p.fines || 0) > 0 ? 'var(--danger)' : 'var(--brand2)'}">$${Number(p.fines || 0).toFixed(2)}</span>
           </div>
         </div>
         <div class="col-3">
@@ -689,7 +716,7 @@
         <div class="col-3">
           <div class="meta">
             <b>⏳ Holds</b>
-            <span>${data.holds.filter(h=>h.patronId===p.id).length} item${data.holds.filter(h=>h.patronId===p.id).length !== 1 ? 's' : ''}</span>
+            <span>${data.holds.filter(h => h.patronId === p.id).length} item${data.holds.filter(h => h.patronId === p.id).length !== 1 ? 's' : ''}</span>
           </div>
         </div>
         <div class="col-3">
@@ -713,11 +740,11 @@
       `;
     }
 
-    const loans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn);
+    const loans = data.loans.filter(l => l.patronId === p.id && !l.returnedOn);
     const loansMount = $('[data-loans]');
 
-    if(loansMount){
-      if(!loans.length){
+    if (loansMount) {
+      if (!loans.length) {
         loansMount.innerHTML = `
           <div class="card pad">
             <div class="note" style="text-align:center; padding:40px 20px">
@@ -728,34 +755,34 @@
             </div>
           </div>
         `;
-      }else{
+      } else {
         loansMount.innerHTML = `
           <div class="catalog">
-            ${loans.map(l=>{
-              const b = data.books.find(x=>x.id===l.bookId);
-              const check = renewalEligibility(data, l, p);
-              const dueDate = new Date(l.dueOn);
-              const today = new Date();
-              const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-              const isOverdue = daysUntilDue < 0;
-              const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
-              
-              const dueBadge = isOverdue 
-                ? `<span class="badge bad">Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) !== 1 ? 's' : ''}</span>`
-                : isDueSoon 
-                ? `<span class="badge warn">Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}</span>`
-                : `<span class="badge good">Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}</span>`;
-              
-              const renewalBadge = check.ok ? '<span class="badge good">Renewable</span>' : '<span class="badge bad">Not renewable</span>';
-              const btn = check.ok
-                ? `<button class="btn success" type="button" data-renew="${l.id}">Renew Now</button>`
-                : `<button class="btn" type="button" data-renew="${l.id}" title="${check.reason || 'Cannot renew'}">Why not?</button>`;
-              
-              const coverImage = b && b.cover 
-                ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
-                : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : l.bookId)}</div>`;
+            ${loans.map(l => {
+          const b = data.books.find(x => x.id === l.bookId);
+          const check = renewalEligibility(data, l, p);
+          const dueDate = new Date(l.dueOn);
+          const today = new Date();
+          const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+          const isOverdue = daysUntilDue < 0;
+          const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
 
-              return `
+          const dueBadge = isOverdue
+            ? `<span class="badge bad">Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) !== 1 ? 's' : ''}</span>`
+            : isDueSoon
+              ? `<span class="badge warn">Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}</span>`
+              : `<span class="badge good">Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}</span>`;
+
+          const renewalBadge = check.ok ? '<span class="badge good">Renewable</span>' : '<span class="badge bad">Not renewable</span>';
+          const btn = check.ok
+            ? `<button class="btn success" type="button" data-renew="${l.id}">Renew Now</button>`
+            : `<button class="btn" type="button" data-renew="${l.id}" title="${check.reason || 'Cannot renew'}">Why not?</button>`;
+
+          const coverImage = b && b.cover
+            ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
+            : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : l.bookId)}</div>`;
+
+          return `
                 <article class="book-card" data-loan-card="${l.id}">
                   <div class="book-cover">
                     ${coverImage}
@@ -783,7 +810,7 @@
                   </div>
                 </article>
               `;
-            }).join('')}
+        }).join('')}
           </div>
           <div class="note" style="margin-top:16px">
             <strong>Renewal Policy:</strong> Renewals are allowed when the item is not reserved by another patron, you have not exceeded the renewal limit (${p.maxRenewalsPerLoan} per loan), and your account does not have heavy fines.
@@ -791,29 +818,29 @@
         `;
       }
 
-      loansMount.addEventListener('click', (e)=>{
+      loansMount.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-renew]');
-        if(!btn) return;
+        if (!btn) return;
         const id = btn.getAttribute('data-renew');
         const dataNow = getData();
         const pNow = patron();
-        const loan = dataNow.loans.find(x=>x.id===id);
-        if(!loan || !pNow) return;
+        const loan = dataNow.loans.find(x => x.id === id);
+        if (!loan || !pNow) return;
 
         const check = renewalEligibility(dataNow, loan, pNow);
-        if(!check.ok){
+        if (!check.ok) {
           toast('Renewal blocked', check.reason);
           return;
         }
         renewLoan(id);
-        setTimeout(()=>{ initPatronAccount(); }, 250);
+        setTimeout(() => { initPatronAccount(); }, 250);
       });
     }
 
-    const holds = data.holds.filter(h=>h.patronId===p.id);
+    const holds = data.holds.filter(h => h.patronId === p.id);
     const holdsMount = $('[data-holds]');
-    if(holdsMount){
-      if(!holds.length){
+    if (holdsMount) {
+      if (!holds.length) {
         holdsMount.innerHTML = `
           <div class="card pad">
             <div class="note" style="text-align:center; padding:40px 20px">
@@ -824,25 +851,25 @@
             </div>
           </div>
         `;
-      }else{
+      } else {
         // Calculate position in queue
-        const holdsWithPosition = holds.map(h=>{
-          const sameBookHolds = data.holds.filter(x=>x.bookId===h.bookId).sort((a,b)=>new Date(a.placedOn) - new Date(b.placedOn));
-          const position = sameBookHolds.findIndex(x=>x.id===h.id) + 1;
-          const book = data.books.find(x=>x.id===h.bookId);
-          return {...h, position, totalInQueue: sameBookHolds.length, book};
+        const holdsWithPosition = holds.map(h => {
+          const sameBookHolds = data.holds.filter(x => x.bookId === h.bookId).sort((a, b) => new Date(a.placedOn) - new Date(b.placedOn));
+          const position = sameBookHolds.findIndex(x => x.id === h.id) + 1;
+          const book = data.books.find(x => x.id === h.bookId);
+          return { ...h, position, totalInQueue: sameBookHolds.length, book };
         });
 
         holdsMount.innerHTML = `
           <div class="catalog">
-            ${holdsWithPosition.map(h=>{
-              const b = h.book || data.books.find(x=>x.id===h.bookId);
-              const isAvailable = b && b.available;
-              const coverImage = b && b.cover 
-                ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
-                : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : h.bookId)}</div>`;
+            ${holdsWithPosition.map(h => {
+          const b = h.book || data.books.find(x => x.id === h.bookId);
+          const isAvailable = b && b.available;
+          const coverImage = b && b.cover
+            ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
+            : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : h.bookId)}</div>`;
 
-              return `
+          return `
                 <article class="book-card" data-hold-card="${h.id}">
                   <div class="book-cover">
                     ${coverImage}
@@ -869,7 +896,7 @@
                   </div>
                 </article>
               `;
-            }).join('')}
+        }).join('')}
           </div>
         `;
       }
@@ -877,9 +904,9 @@
 
     // Reading History
     const historyMount = $('[data-reading-history]');
-    if(historyMount){
-      const returnedLoans = data.loans.filter(l=>l.patronId===p.id && l.returnedOn).slice(0, 6);
-      if(!returnedLoans.length){
+    if (historyMount) {
+      const returnedLoans = data.loans.filter(l => l.patronId === p.id && l.returnedOn).slice(0, 6);
+      if (!returnedLoans.length) {
         historyMount.innerHTML = `
           <div class="card pad">
             <div class="note" style="text-align:center; padding:40px 20px">
@@ -889,16 +916,16 @@
             </div>
           </div>
         `;
-      }else{
+      } else {
         historyMount.innerHTML = `
           <div class="catalog">
-            ${returnedLoans.map(l=>{
-              const b = data.books.find(x=>x.id===l.bookId);
-              const coverImage = b && b.cover 
-                ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
-                : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : l.bookId)}</div>`;
+            ${returnedLoans.map(l => {
+          const b = data.books.find(x => x.id === l.bookId);
+          const coverImage = b && b.cover
+            ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'book-cover-placeholder\\'>${escapeHtml(b.title)}</div>'">`
+            : `<div class="book-cover-placeholder">${escapeHtml(b ? b.title : l.bookId)}</div>`;
 
-              return `
+          return `
                 <article class="book-card">
                   <div class="book-cover">
                     ${coverImage}
@@ -922,7 +949,7 @@
                   </div>
                 </article>
               `;
-            }).join('')}
+        }).join('')}
           </div>
           ${returnedLoans.length >= 6 ? '<div class="note" style="margin-top:12px">Showing your 6 most recent returns. <a href="catalog.html">Browse more books</a> to continue reading!</div>' : ''}
         `;
@@ -930,48 +957,48 @@
     }
 
     const form = $('[data-update-form]');
-    if(form){
+    if (form) {
       const emailInput = $('[name=email]', form);
       const phoneInput = $('[name=phone]', form);
-      if(emailInput) emailInput.value = p.email || '';
-      if(phoneInput) phoneInput.value = p.phone || '';
-      
-      form.addEventListener('submit', (e)=>{
+      if (emailInput) emailInput.value = p.email || '';
+      if (phoneInput) phoneInput.value = p.phone || '';
+
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
         const dataNow = getData();
         const pNow = patron();
-        if(!pNow) return;
+        if (!pNow) return;
         const phone = (phoneInput?.value || '').trim();
         const email = (emailInput?.value || '').trim();
 
-        const rec = dataNow.patrons.find(x=>x.id===pNow.id);
-        if(rec){
-          if(phone) rec.phone = phone;
-          if(email) rec.email = email;
+        const rec = dataNow.patrons.find(x => x.id === pNow.id);
+        if (rec) {
+          if (phone) rec.phone = phone;
+          if (email) rec.email = email;
           saveData(dataNow);
           toast('Updated', 'Your contact details were updated successfully.');
-          setTimeout(()=>{ window.location.reload(); }, 250);
+          setTimeout(() => { window.location.reload(); }, 250);
         }
       });
     }
   }
 
-  function requireAdminOrRedirect(){
+  function requireAdminOrRedirect() {
     const data = getData();
-    if(data.session.isAdmin) return true;
+    if (data.session.isAdmin) return true;
     toast('Admin only', 'Please sign in as admin to access the dashboard.');
-    setTimeout(()=>{ window.location.href = 'patron-login.html'; }, 350);
+    setTimeout(() => { window.location.href = 'patron-login.html'; }, 350);
     return false;
   }
 
-  function getUserRole(){
+  function getUserRole() {
     const data = getData();
-    if(data.session.isAdmin) return 'admin';
-    if(data.session.patronId) return 'user';
+    if (data.session.isAdmin) return 'admin';
+    if (data.session.patronId) return 'user';
     return 'guest';
   }
 
-  function initDashboard(){
+  function initDashboard() {
     const data = getData();
     const role = getUserRole();
     const isAdmin = role === 'admin';
@@ -980,13 +1007,13 @@
 
     // Update header session UI based on role
     const sessionUI = $('[data-session-ui]');
-    if(sessionUI){
-      if(isAdmin){
+    if (sessionUI) {
+      if (isAdmin) {
         sessionUI.innerHTML = `
           <span class="badge">Admin Mode</span>
           <button class="btn danger" type="button" data-admin-signout>Sign out</button>
         `;
-      } else if(isUser){
+      } else if (isUser) {
         const p = patron();
         sessionUI.innerHTML = `
           <span class="badge">Signed in as <b style="color:var(--text)">${escapeHtml(p.name)}</b></span>
@@ -998,16 +1025,16 @@
           <a class="btn primary" href="patron-login.html">Sign in</a>
         `;
       }
-      
-      $('[data-admin-signout]')?.addEventListener('click', ()=>{
-        setSession({isAdmin:false, patronId:null});
+
+      $('[data-admin-signout]')?.addEventListener('click', () => {
+        setSession({ isAdmin: false, patronId: null });
         toast('Signed out', 'Admin session ended.');
-        setTimeout(()=>{ window.location.reload(); }, 250);
+        setTimeout(() => { window.location.reload(); }, 250);
       });
     }
 
     // Apply role-based visibility
-    function applyRoleVisibility(){
+    function applyRoleVisibility() {
       // Admin sections - always visible for admin
       const adminSections = $$('[data-admin-section]');
       adminSections.forEach(section => {
@@ -1023,9 +1050,9 @@
       // Role hints
       const roleHints = $$('[data-role-hint]');
       roleHints.forEach(hint => {
-        if(isAdmin){
+        if (isAdmin) {
           hint.textContent = 'Admin: You can add, edit, and delete items.';
-        } else if(isUser){
+        } else if (isUser) {
           hint.textContent = 'User: You can view and interact with items.';
         } else {
           hint.textContent = 'Guest: Browse and view information only.';
@@ -1042,15 +1069,15 @@
     // Smooth scroll for section navigation with header offset
     const sectionNavs = $$('.section-nav');
     sectionNavs.forEach(nav => {
-      nav.addEventListener('click', (e)=>{
+      nav.addEventListener('click', (e) => {
         e.preventDefault();
         const section = nav.getAttribute('data-section');
         const target = $(`#${section}`);
-        if(target){
+        if (target) {
           // Calculate header height (approximately 80px including padding)
           const headerHeight = 80;
           const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          
+
           window.scrollTo({
             top: targetPosition,
             behavior: 'smooth'
@@ -1060,24 +1087,24 @@
     });
 
     // Initialize dashboard overview
-    function initDashboardOverview(){
+    function initDashboardOverview() {
       const statsMount = $('[data-dashboard-stats]');
-      if(!statsMount) return;
+      if (!statsMount) return;
 
       const totalBooks = data.books.length;
-      const availableBooks = data.books.filter(b=>b.available).length;
+      const availableBooks = data.books.filter(b => b.available).length;
       const checkedOutBooks = totalBooks - availableBooks;
       const totalPatrons = data.patrons.length;
-      const activeLoans = data.loans.filter(l=>!l.returnedOn).length;
+      const activeLoans = data.loans.filter(l => !l.returnedOn).length;
       const activeHolds = data.holds.length;
       const totalEvents = (data.events || []).length;
-      const overdueLoans = data.loans.filter(l=>{
-        if(l.returnedOn) return false;
+      const overdueLoans = data.loans.filter(l => {
+        if (l.returnedOn) return false;
         const dueDate = new Date(l.dueOn);
         const today = new Date();
         return dueDate < today;
       }).length;
-      const totalFines = data.patrons.reduce((sum, p)=>sum + (Number(p.fines) || 0), 0);
+      const totalFines = data.patrons.reduce((sum, p) => sum + (Number(p.fines) || 0), 0);
 
       statsMount.innerHTML = `
         <div class="col-4">
@@ -1174,19 +1201,19 @@
     const holdsMount = $('[data-admin-holds]');
     const membersMount = $('[data-admin-members]');
 
-    function renderPatrons(){
-      if(!patronsMount) return;
-      if(!data.patrons.length){
+    function renderPatrons() {
+      if (!patronsMount) return;
+      if (!data.patrons.length) {
         patronsMount.innerHTML = '<div class="note">No patrons registered yet.</div>';
         return;
       }
 
-      const rows = data.patrons.map(p=>{
-        const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
-        const totalLoans = data.loans.filter(l=>l.patronId===p.id).length;
-        const activeHolds = data.holds.filter(h=>h.patronId===p.id).length;
+      const rows = data.patrons.map(p => {
+        const activeLoans = data.loans.filter(l => l.patronId === p.id && !l.returnedOn).length;
+        const totalLoans = data.loans.filter(l => l.patronId === p.id).length;
+        const activeHolds = data.holds.filter(h => h.patronId === p.id).length;
         const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
-        
+
         return `
           <tr>
             <td>
@@ -1199,7 +1226,7 @@
             <td>${fmtDate(p.membershipDate || p.id)}</td>
             <td>${activeLoans}</td>
             <td>${activeHolds}</td>
-            <td>$${Number(p.fines||0).toFixed(2)}</td>
+            <td>$${Number(p.fines || 0).toFixed(2)}</td>
             <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
             <td>
               <button class="btn" type="button" data-edit-patron="${p.id}">Edit</button>
@@ -1227,22 +1254,22 @@
       `;
     }
 
-    function renderLoans(){
-      if(!loansMount) return;
-      const activeLoans = data.loans.filter(l=>!l.returnedOn);
-      if(!activeLoans.length){
+    function renderLoans() {
+      if (!loansMount) return;
+      const activeLoans = data.loans.filter(l => !l.returnedOn);
+      if (!activeLoans.length) {
         loansMount.innerHTML = '<div class="note">No active loans.</div>';
         return;
       }
 
-      const rows = activeLoans.map(l=>{
-        const b = data.books.find(x=>x.id===l.bookId);
-        const p = data.patrons.find(x=>x.id===l.patronId);
+      const rows = activeLoans.map(l => {
+        const b = data.books.find(x => x.id === l.bookId);
+        const p = data.patrons.find(x => x.id === l.patronId);
         const dueDate = new Date(l.dueOn);
         const today = new Date();
         const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
         const isOverdue = daysUntilDue < 0;
-        
+
         return `
           <tr>
             <td><b>${escapeHtml(b ? b.title : l.bookId)}</b><div style="color:var(--muted); font-size:12px">${escapeHtml(b ? b.author : '')}</div></td>
@@ -1276,20 +1303,20 @@
       `;
     }
 
-    function renderHolds(){
-      if(!holdsMount) return;
-      if(!data.holds.length){
+    function renderHolds() {
+      if (!holdsMount) return;
+      if (!data.holds.length) {
         holdsMount.innerHTML = '<div class="note">No active holds.</div>';
         return;
       }
 
-      const rows = data.holds.map(h=>{
-        const b = data.books.find(x=>x.id===h.bookId);
-        const p = data.patrons.find(x=>x.id===h.patronId);
-        const sameBookHolds = data.holds.filter(x=>x.bookId===h.bookId).sort((a,b)=>new Date(a.placedOn) - new Date(b.placedOn));
-        const position = sameBookHolds.findIndex(x=>x.id===h.id) + 1;
+      const rows = data.holds.map(h => {
+        const b = data.books.find(x => x.id === h.bookId);
+        const p = data.patrons.find(x => x.id === h.patronId);
+        const sameBookHolds = data.holds.filter(x => x.bookId === h.bookId).sort((a, b) => new Date(a.placedOn) - new Date(b.placedOn));
+        const position = sameBookHolds.findIndex(x => x.id === h.id) + 1;
         const isAvailable = b && b.available;
-        
+
         return `
           <tr>
             <td><b>${escapeHtml(b ? b.title : h.bookId)}</b><div style="color:var(--muted); font-size:12px">${escapeHtml(b ? b.author : '')}</div></td>
@@ -1322,7 +1349,7 @@
     }
 
     // Initialize Catalog section
-    function initCatalogSection(){
+    function initCatalogSection() {
       const mount = $('[data-catalog]');
       const search = $('[data-search]');
       const subject = $('[data-subject]');
@@ -1330,30 +1357,30 @@
       const adminSection = $('[data-content-section="catalog"] [data-admin-section]');
       const adminAddBtn = $('[data-admin-add-book]');
 
-      if(subject){
-        const subjects = Array.from(new Set(data.books.map(b=>b.subject))).sort();
-        subject.innerHTML = `<option value="">All subjects</option>` + subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      if (subject) {
+        const subjects = Array.from(new Set(data.books.map(b => b.subject))).sort();
+        subject.innerHTML = `<option value="">All subjects</option>` + subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
       }
 
-      function filter(){
+      function filter() {
         const q = (search?.value || '').trim().toLowerCase();
         const sub = subject?.value || '';
         const av = availability?.value || '';
 
-        const list = data.books.filter(b=>{
-          const matchQ = !q || [b.title,b.author,b.subject,b.isbn,b.id].some(x=>String(x).toLowerCase().includes(q));
+        const list = data.books.filter(b => {
+          const matchQ = !q || [b.title, b.author, b.subject, b.isbn, b.id].some(x => String(x).toLowerCase().includes(q));
           const matchSub = !sub || b.subject === sub;
-          const matchAv = !av || (av==='available' ? b.available : !b.available);
+          const matchAv = !av || (av === 'available' ? b.available : !b.available);
           return matchQ && matchSub && matchAv;
         });
 
         // Pass role info to renderCatalog - admin gets full control, users get interaction, guests get read-only
         renderCatalog(list, mount, isAdmin);
         const count = $('[data-result-count]');
-        if(count) count.textContent = `${list.length} result(s)`;
+        if (count) count.textContent = `${list.length} result(s)`;
       }
 
-      ['input','change'].forEach(evt=>{
+      ['input', 'change'].forEach(evt => {
         search?.addEventListener(evt, filter);
         subject?.addEventListener(evt, filter);
         availability?.addEventListener(evt, filter);
@@ -1363,8 +1390,8 @@
 
       // Admin: Add book
       const addForm = $('[data-add-book-form]');
-      if(addForm && isAdmin){
-        addForm.addEventListener('submit', (e)=>{
+      if (addForm && isAdmin) {
+        addForm.addEventListener('submit', (e) => {
           e.preventDefault();
           const dataNow = getData();
           const title = ($('[name=title]', addForm)?.value || '').trim();
@@ -1374,8 +1401,8 @@
           const format = ($('[name=format]', addForm)?.value || '').trim();
           const location = ($('[name=location]', addForm)?.value || '').trim();
           const cover = ($('[name=cover]', addForm)?.value || '').trim();
-          
-          if(!title || !author){
+
+          if (!title || !author) {
             toast('Missing details', 'Please provide at least title and author.');
             return;
           }
@@ -1396,14 +1423,14 @@
           saveData(dataNow);
           toast('Added', 'New book added to catalog.');
           addForm.reset();
-          if(adminSection) adminSection.style.display = 'none';
+          if (adminSection) adminSection.style.display = 'none';
           filter();
         });
       }
 
-      adminAddBtn?.addEventListener('click', ()=>{
-        if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
-        if(adminSection && adminSection.style.display === 'block'){
+      adminAddBtn?.addEventListener('click', () => {
+        if (adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+        if (adminSection && adminSection.style.display === 'block') {
           const headerHeight = 80;
           const targetPosition = adminSection.getBoundingClientRect().top + window.pageYOffset - headerHeight;
           window.scrollTo({
@@ -1413,25 +1440,25 @@
         }
       });
 
-      $('[data-cancel-add-book]')?.addEventListener('click', ()=>{
-        if(adminSection) adminSection.style.display = 'none';
-        if(addForm) addForm.reset();
+      $('[data-cancel-add-book]')?.addEventListener('click', () => {
+        if (adminSection) adminSection.style.display = 'none';
+        if (addForm) addForm.reset();
       });
 
       // Admin: Delete book and toggle availability
-      if(isAdmin){
-        mount?.addEventListener('click', (e)=>{
+      if (isAdmin) {
+        mount?.addEventListener('click', (e) => {
           const deleteBtn = e.target.closest('[data-delete-book]');
-          if(deleteBtn){
+          if (deleteBtn) {
             const bookId = deleteBtn.getAttribute('data-delete-book');
-            const book = data.books.find(x=>x.id===bookId);
-            if(!book) return;
-            
-            if(confirm(`Delete book "${book.title}" from catalog?`)){
+            const book = data.books.find(x => x.id === bookId);
+            if (!book) return;
+
+            if (confirm(`Delete book "${book.title}" from catalog?`)) {
               const dataNow = getData();
-              dataNow.books = dataNow.books.filter(x=>x.id!==bookId);
-              dataNow.loans = dataNow.loans.filter(l=>l.bookId!==bookId);
-              dataNow.holds = dataNow.holds.filter(h=>h.bookId!==bookId);
+              dataNow.books = dataNow.books.filter(x => x.id !== bookId);
+              dataNow.loans = dataNow.loans.filter(l => l.bookId !== bookId);
+              dataNow.holds = dataNow.holds.filter(h => h.bookId !== bookId);
               saveData(dataNow);
               toast('Deleted', `Book "${book.title}" has been removed.`);
               filter();
@@ -1440,11 +1467,11 @@
           }
 
           const toggleBtn = e.target.closest('[data-toggle-avail]');
-          if(toggleBtn){
+          if (toggleBtn) {
             const bookId = toggleBtn.getAttribute('data-toggle-avail');
             const dataNow = getData();
-            const book = dataNow.books.find(x=>x.id===bookId);
-            if(book){
+            const book = dataNow.books.find(x => x.id === bookId);
+            if (book) {
               book.available = !book.available;
               saveData(dataNow);
               toast('Updated', `Availability updated for "${book.title}".`);
@@ -1456,21 +1483,21 @@
     }
 
     // Initialize Events section
-    function initEventsSection(){
+    function initEventsSection() {
       const eventsList = $('[data-events-list]');
       const adminSection = $('[data-content-section="events"] [data-admin-section]');
       const adminAddBtn = $('[data-admin-add-event]');
 
-      function renderEvents(){
-        if(!eventsList) return;
+      function renderEvents() {
+        if (!eventsList) return;
         const events = data.events || [];
-        
-        if(!events.length){
+
+        if (!events.length) {
           eventsList.innerHTML = '<div class="col-12"><div class="note">No events scheduled.</div></div>';
           return;
         }
 
-        eventsList.innerHTML = events.map(e=>{
+        eventsList.innerHTML = events.map(e => {
           const deleteBtn = isAdmin ? `<button class="btn danger" type="button" data-delete-event="${e.id}" style="margin-top:12px">Delete</button>` : '';
           return `
             <div class="col-6">
@@ -1495,8 +1522,8 @@
 
       // Admin: Add event
       const addForm = $('[data-add-event-form]');
-      if(addForm && isAdmin){
-        addForm.addEventListener('submit', (e)=>{
+      if (addForm && isAdmin) {
+        addForm.addEventListener('submit', (e) => {
           e.preventDefault();
           const dataNow = getData();
           const title = ($('[name=title]', addForm)?.value || '').trim();
@@ -1504,13 +1531,13 @@
           const time = ($('[name=time]', addForm)?.value || '').trim();
           const location = ($('[name=location]', addForm)?.value || '').trim();
           const description = ($('[name=description]', addForm)?.value || '').trim();
-          
-          if(!title || !schedule){
+
+          if (!title || !schedule) {
             toast('Missing details', 'Please provide at least title and schedule.');
             return;
           }
 
-          if(!dataNow.events) dataNow.events = [];
+          if (!dataNow.events) dataNow.events = [];
           dataNow.events.push({
             id: uid('e'),
             title,
@@ -1522,14 +1549,14 @@
           saveData(dataNow);
           toast('Added', 'New event added.');
           addForm.reset();
-          if(adminSection) adminSection.style.display = 'none';
+          if (adminSection) adminSection.style.display = 'none';
           renderEvents();
         });
       }
 
-      adminAddBtn?.addEventListener('click', ()=>{
-        if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
-        if(adminSection && adminSection.style.display === 'block'){
+      adminAddBtn?.addEventListener('click', () => {
+        if (adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+        if (adminSection && adminSection.style.display === 'block') {
           const headerHeight = 80;
           const targetPosition = adminSection.getBoundingClientRect().top + window.pageYOffset - headerHeight;
           window.scrollTo({
@@ -1539,23 +1566,23 @@
         }
       });
 
-      $('[data-cancel-add-event]')?.addEventListener('click', ()=>{
-        if(adminSection) adminSection.style.display = 'none';
-        if(addForm) addForm.reset();
+      $('[data-cancel-add-event]')?.addEventListener('click', () => {
+        if (adminSection) adminSection.style.display = 'none';
+        if (addForm) addForm.reset();
       });
 
       // Admin: Delete event
-      if(isAdmin){
-        eventsList?.addEventListener('click', (e)=>{
+      if (isAdmin) {
+        eventsList?.addEventListener('click', (e) => {
           const deleteBtn = e.target.closest('[data-delete-event]');
-          if(deleteBtn){
+          if (deleteBtn) {
             const eventId = deleteBtn.getAttribute('data-delete-event');
-            const event = data.events.find(x=>x.id===eventId);
-            if(!event) return;
-            
-            if(confirm(`Delete event "${event.title}"?`)){
+            const event = data.events.find(x => x.id === eventId);
+            if (!event) return;
+
+            if (confirm(`Delete event "${event.title}"?`)) {
               const dataNow = getData();
-              dataNow.events = dataNow.events.filter(x=>x.id!==eventId);
+              dataNow.events = dataNow.events.filter(x => x.id !== eventId);
               saveData(dataNow);
               toast('Deleted', `Event "${event.title}" has been removed.`);
               renderEvents();
@@ -1566,17 +1593,17 @@
     }
 
     // Initialize Membership section (patrons management)
-    function initMembershipSection(){
+    function initMembershipSection() {
       // Admin members view (if separate from patrons)
-      if(membersMount && isAdmin){
+      if (membersMount && isAdmin) {
         const patrons = data.patrons || [];
-        if(!patrons.length){
+        if (!patrons.length) {
           membersMount.innerHTML = '<div class="note">No members registered yet.</div>';
         } else {
-          const rows = patrons.map(p=>{
-            const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
+          const rows = patrons.map(p => {
+            const activeLoans = data.loans.filter(l => l.patronId === p.id && !l.returnedOn).length;
             const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
-            
+
             return `
               <tr>
                 <td>
@@ -1588,7 +1615,7 @@
                 </td>
                 <td>${fmtDate(p.membershipDate || p.id)}</td>
                 <td>${activeLoans}</td>
-                <td>$${Number(p.fines||0).toFixed(2)}</td>
+                <td>$${Number(p.fines || 0).toFixed(2)}</td>
                 <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
                 <td>
                   <button class="btn" type="button" data-edit-member="${p.id}">Edit</button>
@@ -1615,15 +1642,15 @@
           `;
 
           // Edit/Delete member handlers
-          membersMount.addEventListener('click', (e)=>{
+          membersMount.addEventListener('click', (e) => {
             const editBtn = e.target.closest('[data-edit-member]');
-            if(editBtn){
+            if (editBtn) {
               const patronId = editBtn.getAttribute('data-edit-member');
-              const p = data.patrons.find(x=>x.id===patronId);
-              if(!p) return;
-              
-              const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
-              if(newFines !== null){
+              const p = data.patrons.find(x => x.id === patronId);
+              if (!p) return;
+
+              const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines || 0).toFixed(2)}):`, p.fines || 0);
+              if (newFines !== null) {
                 const fines = parseFloat(newFines) || 0;
                 p.fines = fines;
                 saveData(data);
@@ -1634,16 +1661,16 @@
             }
 
             const deleteBtn = e.target.closest('[data-delete-member]');
-            if(deleteBtn){
+            if (deleteBtn) {
               const patronId = deleteBtn.getAttribute('data-delete-member');
-              const p = data.patrons.find(x=>x.id===patronId);
-              if(!p) return;
-              
-              if(confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)){
+              const p = data.patrons.find(x => x.id === patronId);
+              if (!p) return;
+
+              if (confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)) {
                 const dataNow = getData();
-                dataNow.patrons = dataNow.patrons.filter(x=>x.id!==patronId);
-                dataNow.loans = dataNow.loans.filter(l=>l.patronId!==patronId);
-                dataNow.holds = dataNow.holds.filter(h=>h.patronId!==patronId);
+                dataNow.patrons = dataNow.patrons.filter(x => x.id !== patronId);
+                dataNow.loans = dataNow.loans.filter(l => l.patronId !== patronId);
+                dataNow.holds = dataNow.holds.filter(h => h.patronId !== patronId);
                 saveData(dataNow);
                 toast('Deleted', `Member "${p.name}" has been removed.`);
                 initMembershipSection();
@@ -1670,15 +1697,15 @@
     initMembershipSection();
 
     // Edit patron
-    patronsMount?.addEventListener('click', (e)=>{
+    patronsMount?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-edit-patron]');
-      if(editBtn){
+      if (editBtn) {
         const patronId = editBtn.getAttribute('data-edit-patron');
-        const p = data.patrons.find(x=>x.id===patronId);
-        if(!p) return;
-        
-        const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
-        if(newFines !== null){
+        const p = data.patrons.find(x => x.id === patronId);
+        if (!p) return;
+
+        const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines || 0).toFixed(2)}):`, p.fines || 0);
+        if (newFines !== null) {
           const fines = parseFloat(newFines) || 0;
           p.fines = fines;
           saveData(data);
@@ -1689,15 +1716,15 @@
       }
 
       const deleteBtn = e.target.closest('[data-delete-patron]');
-      if(deleteBtn){
+      if (deleteBtn) {
         const patronId = deleteBtn.getAttribute('data-delete-patron');
-        const p = data.patrons.find(x=>x.id===patronId);
-        if(!p) return;
-        
-        if(confirm(`Delete patron "${p.name}"? This will also remove all their loans and holds.`)){
-          data.patrons = data.patrons.filter(x=>x.id!==patronId);
-          data.loans = data.loans.filter(l=>l.patronId!==patronId);
-          data.holds = data.holds.filter(h=>h.patronId!==patronId);
+        const p = data.patrons.find(x => x.id === patronId);
+        if (!p) return;
+
+        if (confirm(`Delete patron "${p.name}"? This will also remove all their loans and holds.`)) {
+          data.patrons = data.patrons.filter(x => x.id !== patronId);
+          data.loans = data.loans.filter(l => l.patronId !== patronId);
+          data.holds = data.holds.filter(h => h.patronId !== patronId);
           saveData(data);
           toast('Deleted', `Patron "${p.name}" has been removed.`);
           renderPatrons();
@@ -1708,16 +1735,16 @@
     });
 
     // Return loan
-    loansMount?.addEventListener('click', (e)=>{
+    loansMount?.addEventListener('click', (e) => {
       const returnBtn = e.target.closest('[data-return-loan]');
-      if(returnBtn){
+      if (returnBtn) {
         const loanId = returnBtn.getAttribute('data-return-loan');
-        const loan = data.loans.find(x=>x.id===loanId);
-        if(!loan) return;
-        
+        const loan = data.loans.find(x => x.id === loanId);
+        if (!loan) return;
+
         loan.returnedOn = todayISO();
-        const book = data.books.find(x=>x.id===loan.bookId);
-        if(book) book.available = true;
+        const book = data.books.find(x => x.id === loan.bookId);
+        if (book) book.available = true;
         saveData(data);
         toast('Returned', 'Book has been returned.');
         renderLoans();
@@ -1726,14 +1753,14 @@
     });
 
     // Delete hold
-    holdsMount?.addEventListener('click', (e)=>{
+    holdsMount?.addEventListener('click', (e) => {
       const deleteBtn = e.target.closest('[data-delete-hold]');
-      if(deleteBtn){
+      if (deleteBtn) {
         const holdId = deleteBtn.getAttribute('data-delete-hold');
-        const hold = data.holds.find(x=>x.id===holdId);
-        if(!hold) return;
-        
-        data.holds = data.holds.filter(x=>x.id!==holdId);
+        const hold = data.holds.find(x => x.id === holdId);
+        if (!hold) return;
+
+        data.holds = data.holds.filter(x => x.id !== holdId);
         saveData(data);
         toast('Removed', 'Hold has been removed.');
         renderHolds();
@@ -1741,40 +1768,40 @@
     });
 
     const signOutBtn = $('[data-admin-signout]');
-    signOutBtn?.addEventListener('click', ()=>{
-      setSession({isAdmin:false, patronId:null});
+    signOutBtn?.addEventListener('click', () => {
+      setSession({ isAdmin: false, patronId: null });
       toast('Signed out', 'Admin session ended.');
-      setTimeout(()=>{ window.location.href = 'index.html'; }, 250);
+      setTimeout(() => { window.location.href = 'index.html'; }, 250);
     });
 
     // Reset button removed - no reset functionality needed
   }
 
-  function initEventsPage(){
+  function initEventsPage() {
     const data = getData();
     const isAdmin = data.session.isAdmin;
     const eventsList = $('[data-events-list]');
     const adminSection = $('[data-admin-section]');
     const adminAddBtn = $('[data-admin-add-event]');
 
-    if(isAdmin){
-      if(adminSection) adminSection.style.display = 'block';
-      if(adminAddBtn) adminAddBtn.style.display = 'inline-flex';
+    if (isAdmin) {
+      if (adminSection) adminSection.style.display = 'block';
+      if (adminAddBtn) adminAddBtn.style.display = 'inline-flex';
     } else {
-      if(adminSection) adminSection.style.display = 'none';
-      if(adminAddBtn) adminAddBtn.style.display = 'none';
+      if (adminSection) adminSection.style.display = 'none';
+      if (adminAddBtn) adminAddBtn.style.display = 'none';
     }
 
-    function renderEvents(){
-      if(!eventsList) return;
+    function renderEvents() {
+      if (!eventsList) return;
       const events = data.events || [];
-      
-      if(!events.length){
+
+      if (!events.length) {
         eventsList.innerHTML = '<div class="col-12"><div class="note">No events scheduled.</div></div>';
         return;
       }
 
-      eventsList.innerHTML = events.map(e=>{
+      eventsList.innerHTML = events.map(e => {
         const deleteBtn = isAdmin ? `<button class="btn danger" type="button" data-delete-event="${e.id}" style="margin-top:12px">Delete</button>` : '';
         return `
           <div class="col-6">
@@ -1799,8 +1826,8 @@
 
     // Admin: Add event
     const addForm = $('[data-add-event-form]');
-    if(addForm && isAdmin){
-      addForm.addEventListener('submit', (e)=>{
+    if (addForm && isAdmin) {
+      addForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const dataNow = getData();
         const title = ($('[name=title]', addForm)?.value || '').trim();
@@ -1808,13 +1835,13 @@
         const time = ($('[name=time]', addForm)?.value || '').trim();
         const location = ($('[name=location]', addForm)?.value || '').trim();
         const description = ($('[name=description]', addForm)?.value || '').trim();
-        
-        if(!title || !schedule){
+
+        if (!title || !schedule) {
           toast('Missing details', 'Please provide at least title and schedule.');
           return;
         }
 
-        if(!dataNow.events) dataNow.events = [];
+        if (!dataNow.events) dataNow.events = [];
         dataNow.events.push({
           id: uid('e'),
           title,
@@ -1826,36 +1853,36 @@
         saveData(dataNow);
         toast('Added', 'New event added.');
         addForm.reset();
-        if(adminSection) adminSection.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
         renderEvents();
       });
     }
 
     // Admin: Toggle add form
-    adminAddBtn?.addEventListener('click', ()=>{
-      if(adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
-      if(adminSection && adminSection.style.display === 'block'){
-        adminSection.scrollIntoView({behavior:'smooth', block:'start'});
+    adminAddBtn?.addEventListener('click', () => {
+      if (adminSection) adminSection.style.display = adminSection.style.display === 'none' ? 'block' : 'none';
+      if (adminSection && adminSection.style.display === 'block') {
+        adminSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
 
-    $('[data-cancel-add-event]')?.addEventListener('click', ()=>{
-      if(adminSection) adminSection.style.display = 'none';
-      if(addForm) addForm.reset();
+    $('[data-cancel-add-event]')?.addEventListener('click', () => {
+      if (adminSection) adminSection.style.display = 'none';
+      if (addForm) addForm.reset();
     });
 
     // Admin: Delete event
-    if(isAdmin){
-      eventsList?.addEventListener('click', (e)=>{
+    if (isAdmin) {
+      eventsList?.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('[data-delete-event]');
-        if(deleteBtn){
+        if (deleteBtn) {
           const eventId = deleteBtn.getAttribute('data-delete-event');
-          const event = data.events.find(x=>x.id===eventId);
-          if(!event) return;
-          
-          if(confirm(`Delete event "${event.title}"?`)){
+          const event = data.events.find(x => x.id === eventId);
+          if (!event) return;
+
+          if (confirm(`Delete event "${event.title}"?`)) {
             const dataNow = getData();
-            dataNow.events = dataNow.events.filter(x=>x.id!==eventId);
+            dataNow.events = dataNow.events.filter(x => x.id !== eventId);
             saveData(dataNow);
             toast('Deleted', `Event "${event.title}" has been removed.`);
             renderEvents();
@@ -1865,28 +1892,28 @@
     }
   }
 
-  function initMembership(){
+  function initMembership() {
     const data = getData();
     const isAdmin = data.session.isAdmin;
     const adminSection = $('[data-admin-section]');
     const membersMount = $('[data-admin-members]');
 
-    if(isAdmin && adminSection){
+    if (isAdmin && adminSection) {
       adminSection.style.display = 'block';
-    } else if(adminSection){
+    } else if (adminSection) {
       adminSection.style.display = 'none';
     }
 
     // Admin: Render members list
-    if(isAdmin && membersMount){
+    if (isAdmin && membersMount) {
       const patrons = data.patrons || [];
-      if(!patrons.length){
+      if (!patrons.length) {
         membersMount.innerHTML = '<div class="note">No members registered yet.</div>';
       } else {
-        const rows = patrons.map(p=>{
-          const activeLoans = data.loans.filter(l=>l.patronId===p.id && !l.returnedOn).length;
+        const rows = patrons.map(p => {
+          const activeLoans = data.loans.filter(l => l.patronId === p.id && !l.returnedOn).length;
           const accountStatus = (p.fines || 0) > 50 ? 'Restricted' : 'Active';
-          
+
           return `
             <tr>
               <td>
@@ -1898,7 +1925,7 @@
               </td>
               <td>${fmtDate(p.membershipDate || p.id)}</td>
               <td>${activeLoans}</td>
-              <td>$${Number(p.fines||0).toFixed(2)}</td>
+              <td>$${Number(p.fines || 0).toFixed(2)}</td>
               <td><span class="badge ${accountStatus === 'Active' ? 'good' : 'bad'}">${accountStatus}</span></td>
               <td>
                 <button class="btn" type="button" data-edit-member="${p.id}">Edit</button>
@@ -1925,15 +1952,15 @@
         `;
 
         // Edit/Delete member handlers
-        membersMount.addEventListener('click', (e)=>{
+        membersMount.addEventListener('click', (e) => {
           const editBtn = e.target.closest('[data-edit-member]');
-          if(editBtn){
+          if (editBtn) {
             const patronId = editBtn.getAttribute('data-edit-member');
-            const p = data.patrons.find(x=>x.id===patronId);
-            if(!p) return;
-            
-            const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines||0).toFixed(2)}):`, p.fines || 0);
-            if(newFines !== null){
+            const p = data.patrons.find(x => x.id === patronId);
+            if (!p) return;
+
+            const newFines = prompt(`Update fines for ${p.name} (current: $${Number(p.fines || 0).toFixed(2)}):`, p.fines || 0);
+            if (newFines !== null) {
               const fines = parseFloat(newFines) || 0;
               p.fines = fines;
               saveData(data);
@@ -1944,16 +1971,16 @@
           }
 
           const deleteBtn = e.target.closest('[data-delete-member]');
-          if(deleteBtn){
+          if (deleteBtn) {
             const patronId = deleteBtn.getAttribute('data-delete-member');
-            const p = data.patrons.find(x=>x.id===patronId);
-            if(!p) return;
-            
-            if(confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)){
+            const p = data.patrons.find(x => x.id === patronId);
+            if (!p) return;
+
+            if (confirm(`Delete member "${p.name}"? This will also remove all their loans and holds.`)) {
               const dataNow = getData();
-              dataNow.patrons = dataNow.patrons.filter(x=>x.id!==patronId);
-              dataNow.loans = dataNow.loans.filter(l=>l.patronId!==patronId);
-              dataNow.holds = dataNow.holds.filter(h=>h.patronId!==patronId);
+              dataNow.patrons = dataNow.patrons.filter(x => x.id !== patronId);
+              dataNow.loans = dataNow.loans.filter(l => l.patronId !== patronId);
+              dataNow.holds = dataNow.holds.filter(h => h.patronId !== patronId);
               saveData(dataNow);
               toast('Deleted', `Member "${p.name}" has been removed.`);
               initMembership();
@@ -1964,18 +1991,18 @@
     }
 
     const form = $('[data-membership-form]');
-    form?.addEventListener('submit', (e)=>{
+    form?.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = ($('[name=name]')?.value || '').trim();
       const email = ($('[name=email]')?.value || '').trim();
-      if(!name || !email){
+      if (!name || !email) {
         toast('Missing details', 'Please fill in your name and email.');
         return;
       }
 
       const dataNow = getData();
-      const existing = dataNow.patrons.find(p=>p.email.toLowerCase()===email.toLowerCase());
-      if(existing){
+      const existing = dataNow.patrons.find(p => p.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
         toast('Already registered', 'A patron account already exists for that email. Try signing in.');
         return;
       }
@@ -1993,34 +2020,34 @@
       saveData(dataNow);
 
       toast('Registration submitted', 'Your patron account was created (demo). Signing you in...');
-      setSession({patronId, isAdmin:false});
-      setTimeout(()=>{ window.location.href = 'patron-account.html'; }, 450);
+      setSession({ patronId, isAdmin: false });
+      setTimeout(() => { window.location.href = 'patron-account.html'; }, 450);
     });
   }
 
-  function initTheme(){
+  function initTheme() {
     const THEME_KEY = 'plw_theme';
     const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-    
-    function setTheme(theme){
-      if(theme === 'dark'){
+
+    function setTheme(theme) {
+      if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
       }
       localStorage.setItem(THEME_KEY, theme);
-      
+
       const icons = $$('[data-theme-icon]');
       icons.forEach(icon => {
         icon.textContent = theme === 'dark' ? '☀️' : '🌙';
       });
     }
-    
+
     setTheme(savedTheme);
-    
+
     const toggles = $$('[data-theme-toggle]');
     toggles.forEach(toggle => {
-      toggle.addEventListener('click', ()=>{
+      toggle.addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         setTheme(newTheme);
@@ -2028,25 +2055,25 @@
     });
   }
 
-  function initLibraryInfo(){
+  function initLibraryInfo() {
     const data = getData();
     const lib = data.library;
     const info = $('[data-library-info]');
-    if(info && !info.innerHTML){
+    if (info && !info.innerHTML) {
       info.innerHTML = `
-        <div class="meta"><b>Timings</b><span>${escapeHtml(lib.timings)}</span></div>
-        <div class="meta"><b>Address</b><span>${escapeHtml(lib.address)}, ${escapeHtml(lib.city)}</span></div>
-        <div class="meta"><b>Contact</b><span>${escapeHtml(lib.phone)} • ${escapeHtml(lib.email)}</span></div>
+        <div class="col-4"><div class="meta"><b>Timings</b><span>${escapeHtml(lib.timings)}</span></div></div>
+        <div class="col-4"><div class="meta"><b>Address</b><span>${escapeHtml(lib.address)}, ${escapeHtml(lib.city)}</span></div></div>
+        <div class="col-4"><div class="meta"><b>Contact</b><span>${escapeHtml(lib.phone)} • ${escapeHtml(lib.email)}</span></div></div>
       `;
     }
   }
 
-  function initBackToTop(){
+  function initBackToTop() {
     const backToTopBtn = $('[data-back-to-top]');
-    if(!backToTopBtn) return;
+    if (!backToTopBtn) return;
 
-    function toggleBackToTop(){
-      if(window.scrollY > 300){
+    function toggleBackToTop() {
+      if (window.scrollY > 300) {
         backToTopBtn.classList.add('visible');
       } else {
         backToTopBtn.classList.remove('visible');
@@ -2056,40 +2083,80 @@
     window.addEventListener('scroll', toggleBackToTop);
     toggleBackToTop(); // Check initial state
 
-    backToTopBtn.addEventListener('click', (e)=>{
+    backToTopBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.scrollTo({top: 0, behavior: 'smooth'});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
-  function initPage(){
+  function initResponsiveNav() {
+    const toggle = $('[data-nav-toggle]');
+    const nav = $('.nav');
+    if (!toggle || !nav) return;
+
+    // Inject mobile session UI container if it doesn't exist
+    if (!$('[data-mobile-session-ui]', nav)) {
+      const mUi = document.createElement('div');
+      mUi.className = 'mobile-session-ui';
+      mUi.setAttribute('data-mobile-session-ui', '');
+      nav.appendChild(mUi);
+      initHeaderSessionUI(); // Re-run to populate the new mount
+    }
+
+    toggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('open');
+      toggle.textContent = isOpen ? '✕' : '☰';
+      toggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target) && !toggle.contains(e.target) && nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        toggle.textContent = '☰';
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close menu when clicking a link (optional, good for SPAs but here we reload mostly)
+    $$('a', nav).forEach(link => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('open');
+        toggle.textContent = '☰';
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  function initPage() {
     initTheme();
     setActiveNav();
     initHeaderSessionUI();
     initBackToTop();
+    initResponsiveNav();
 
     const page = document.body.getAttribute('data-page');
-    if(page==='home' || page==='home-2') initHome();
-    if(page==='catalog') initCatalogPage();
-    if(page==='patron-login') initPatronLogin();
-    if(page==='patron-account') initPatronAccount();
-    if(page==='membership') initMembership();
-    if(page==='events') initEventsPage();
-    if(page==='dashboard') initDashboard();
-    
+    if (page === 'home' || page === 'home-2') initHome();
+    if (page === 'catalog') initCatalogPage();
+    if (page === 'patron-login') initPatronLogin();
+    if (page === 'patron-account') initPatronAccount();
+    if (page === 'membership') initMembership();
+    if (page === 'events') initEventsPage();
+    if (page === 'dashboard') initDashboard();
+
     // Initialize library info for pages that need it
-    if(['about', 'home-2'].includes(page)){
+    if (['about', 'home-2'].includes(page)) {
       initLibraryInfo();
     }
 
     const year = $('[data-year]');
-    if(year) year.textContent = String(new Date().getFullYear());
+    if (year) year.textContent = String(new Date().getFullYear());
 
     const reset = $('[data-reset]');
-    reset?.addEventListener('click', ()=>{
+    reset?.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
       toast('Reset', 'Demo data reset. Reloading...');
-      setTimeout(()=>{ window.location.reload(); }, 350);
+      setTimeout(() => { window.location.reload(); }, 350);
     });
   }
 

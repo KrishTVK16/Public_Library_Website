@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,6 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body data-page="dashboard">
   <a class="skip-link" href="#main">Skip to content</a>
 
@@ -14,35 +16,17 @@
     <div class="container header-inner">
       <a class="brand" href="index.html" aria-label="Home">
         <div class="brand-mark">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-            <defs>
-              <linearGradient id="bookGradDashboard" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#704214;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#6B7A4F;stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <path d="M 15 20 L 15 80 Q 15 85 20 85 L 45 85 Q 50 85 50 80 L 50 20 Q 50 15 45 15 L 20 15 Q 15 15 15 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
-            <path d="M 50 20 L 50 80 Q 50 85 55 85 L 80 85 Q 85 85 85 80 L 85 20 Q 85 15 80 15 L 55 15 Q 50 15 50 20 Z" fill="#F7F3E9" stroke="#704214" stroke-width="2"/>
-            <path d="M 45 15 L 55 15 L 55 85 L 45 85 Z" fill="url(#bookGradDashboard)"/>
-            <line x1="22" y1="28" x2="43" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="22" y1="38" x2="43" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="22" y1="48" x2="43" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="22" y1="58" x2="43" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="22" y1="68" x2="43" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="57" y1="28" x2="78" y2="28" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="57" y1="38" x2="78" y2="38" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="57" y1="48" x2="78" y2="48" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="57" y1="58" x2="78" y2="58" stroke="#704214" stroke-width="1" opacity="0.3"/>
-            <line x1="57" y1="68" x2="78" y2="68" stroke="#704214" stroke-width="1" opacity="0.3"/>
-          </svg>
+          <img src="logo.svg" alt="Logo">
         </div>
         <div class="brand-title">
-          <strong>City Central Public Library</strong>
-          <span>Admin Dashboard</span>
+          <strong>City Central</strong>
+          <span>Public Library</span>
         </div>
       </a>
 
       <nav class="nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="home-2.html" data-nav="home-2">Home 2</a>
         <a href="#overview" data-section="overview" class="section-nav">Overview</a>
         <a href="#catalog" data-section="catalog" class="section-nav">Catalog</a>
         <a href="#events" data-section="events" class="section-nav">Events</a>
@@ -50,10 +34,14 @@
       </nav>
 
       <div class="controls" style="display:flex; align-items:center; gap:10px">
-        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle title="Toggle dark/light mode">
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle
+          title="Toggle dark/light mode">
           <span data-theme-icon>🌙</span>
         </button>
         <div data-session-ui></div>
+        <button class="nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>
+          ☰
+        </button>
       </div>
     </div>
   </header>
@@ -307,4 +295,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>
